@@ -7,7 +7,7 @@ from typing import List
 import pypi_xmlrpc
 
 from pypi_librarian.class_package import Package
-from pypi_librarian.json_endpoints import package_json
+from pypi_librarian.json_endpoints import JsonEndpoints
 
 
 class Project(object):
@@ -22,7 +22,13 @@ class Project(object):
         """
         self.name = name
         self.normalized_name = ""
-        self.main_package_json = package_json(self.name)
+        je = JsonEndpoints()
+        data = je.package_json(self.name)
+
+        if data is None:
+            raise TypeError("That package doesn't exist on the repository")
+
+        self.main_package_json = data
         # different schema from json.
         self.xml_rpc_info = pypi_xmlrpc.release_data(
             self.name, self.main_package_json["info"]["version"]

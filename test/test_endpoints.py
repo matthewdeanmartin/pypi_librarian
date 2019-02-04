@@ -3,7 +3,7 @@
 Test all kinds of endpoints in one place
 """
 from pypi_librarian.html_endpoints import HtmlEndpoints
-from pypi_librarian.json_endpoints import package_json, package_version_json
+from pypi_librarian.json_endpoints import JsonEndpoints
 from pypi_librarian.rss_endpoints import RssEndpoints
 import pypi_xmlrpc
 
@@ -19,8 +19,9 @@ def test_html():
 
 
 def test_json():
-    print(package_json("jiggle_version"))
-    print(package_version_json("jiggle_version", "1.0.68"))
+    je = JsonEndpoints()
+    print(je.package_json("jiggle_version"))
+    print(je.package_version_json("jiggle_version", "1.0.68"))
 
 def test_rss():
     client = RssEndpoints()

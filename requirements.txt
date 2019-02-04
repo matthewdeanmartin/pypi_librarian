@@ -12,6 +12,9 @@
 
 docopts
 lxml
+pkg-info
+pkginfo
 pypi-xmlrpc
+qypi
 requests
 yolk3k

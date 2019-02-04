@@ -41,6 +41,7 @@ def check_is_aws():
 # find src/ -type f -print0 | xargs -0 stat -f "%m %N" | sort -rn | head -10 | cut -f2- -d" "
 class BuildState(object):
     def __init__(self, what, where):
+        print(what,where)
         self.what = what
         self.where = where
         if not os.path.exists(".build_state"):
@@ -248,3 +249,4 @@ def timed():
             return result
         return wrapper
     return real_decorator
+

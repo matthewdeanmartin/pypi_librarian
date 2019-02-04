@@ -43,6 +43,9 @@ lxml = "*"
 pypi-xmlrpc = "*"
 yolk3k = "*"
 docopts = "*"
+pkg-info = "*"
+pkginfo = "*"
+qypi = "*"
 
 [requires]
 python_version = "3.6"

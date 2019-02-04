@@ -2,7 +2,7 @@
 """
 A single release
 """
-from pypi_librarian.json_endpoints import package_json
+from pypi_librarian.json_endpoints import JsonEndpoints
 
 
 class Package(object):
@@ -18,7 +18,8 @@ class Package(object):
         """
         self.name = name
         self.version = version
-        self.metadata = package_json(self.name)
+        je = JsonEndpoints()
+        self.metadata = je.package_json(self.name)
         self.normalized_name = self.metadata["info"]["name"]
         self.owner = self.metadata["info"]["author_email"]
 

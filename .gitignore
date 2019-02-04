@@ -210,3 +210,9 @@ dist/
 .idea
 .idea/
 pypi_librarian/packages.html
+pypi_librarian/tmp
+pypi_librarian/tmp/
+pypi_librarian/test/tmp
+pypi_librarian/test/tmp/
+
+tmp/

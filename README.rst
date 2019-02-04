@@ -7,7 +7,8 @@ How this relates to other tools that download things from pypi: -
 bandersnatch - too focused on being a mirror for pypi - pip - too
 focused on package installation - twine - too focused on package upload
 - pipenv - too focused on package installation - requests - unaware of
-any specific feature of pypi/warehouse
+any specific feature of pypi/warehouse - pypi_xmlrpc - only uses the
+xmlrpc endpoints, which are to be deprecated some day.
 
 Specific Scenarios
 ------------------
@@ -43,7 +44,28 @@ Existing Solutions
 `Yolk <https://pypi.org/project/yolk3k/>`__ Command line, queries
 package metadata
 
-Pip - Has some search & meta data functionality
+`Pip <https://pypi.org/project/pip/>`__ - Has some search & meta data
+functionality. Explicitly says that it should not be used as library but
+only as shell command.
+
+`qypi <https://pypi.org/project/qypi/>`__ - strictly fetches meta data.
+Outputs json.
+
+Parsing the setup.py/PKG_INFO files
+-----------------------------------
+
+-  `pkginfo <https://pypi.org/project/pkginfo/>`__ - attempts to read
+   PKG_INFO if it can find it. I couldn’t get it to work.
+-  `pkg_info <https://pypi.org/project/pkg_info/>`__ - appears to be a
+   tiny script that queries pypi for the same
+
+similar things - `bento <https://pypi.org/project/bento/>`__ - a tool
+for making pip compatible packages, using a yaml-like bento file instead
+of a setup.py file -
+`poetry <https://poetry.eustace.io/docs/pyproject/>`__ - creates
+packages, uses a pypackage.toml file -
+`pipenv <https://poetry.eustace.io/docs/pipenv/>`__ The pipfile Toml
+file is a sort of metadata file.
 
 Package Statitics
 -----------------
@@ -68,4 +90,7 @@ Bandersnatch
 Commercial Package Repos
 ------------------------
 
-packagecloud.io gemfury
+I plan to implement support for pypi & compatible mirrors first.
+
+-  packagecloud.io
+-  gemfury

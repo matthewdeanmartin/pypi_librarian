@@ -27,11 +27,10 @@ if sys.argv[-1] == "publish":
     sys.exit()
 required = [
     'docopt', # command line parser
-    'semantic_version', # sem ver parser
-    'cmp-version',
-    'parver', # pep440 parser
-    'versio', # pep440 parser
-    'chardet' # for reading source code files
+    'lxml',
+    'pypi-xmlrpc',
+    'requests',
+    'yolk3k'
 ]
 
 
@@ -100,8 +99,5 @@ setup(
         #'Programming Language :: Python :: Implementation :: PyPy',
     ],
     cmdclass={'upload': UploadCommand, },
-    # setup_cfg=True,
-    setup_requires=['pbr'
-                    ],
-    pbr=False
+    setup_requires=[],
 )
