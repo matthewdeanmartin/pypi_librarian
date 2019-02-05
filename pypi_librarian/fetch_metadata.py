@@ -91,7 +91,9 @@ if __name__ == "__main__":
 
         def go():
             je = JsonEndpoints()
-            fetcher = FetchMetadata("tmp", je.package_json_as_text, 20)
+            invoker = je.package_json_as_text
+            invoker = info
+            fetcher = FetchMetadata("tmp", invoker , 20)
             fetcher.generate_packages()
 
         go()

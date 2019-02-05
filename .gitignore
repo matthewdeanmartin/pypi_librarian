@@ -214,5 +214,7 @@ pypi_librarian/tmp
 pypi_librarian/tmp/
 pypi_librarian/test/tmp
 pypi_librarian/test/tmp/
-
+pypi_librarian/test/tmp_pip/
 tmp/
+
+pypi_librarian/tmp_pip/
