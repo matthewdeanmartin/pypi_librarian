@@ -78,7 +78,7 @@ setup(
     author='Matthew Martin',
     author_email='matthewdeanmartin@gmail.com',
     url='https://github.com/matthewdeanmartin/' + PROJECT_NAME,
-    packages=find_packages(exclude=['test']),
+    packages=find_packages(exclude=['test', 'test.*']),
     entry_points={
 
         'console_scripts': [
