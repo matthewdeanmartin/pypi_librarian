@@ -18,3 +18,4 @@ pypi-xmlrpc
 qypi
 requests
 yolk3k
+urllib3>=2.6.0 # not directly required, pinned by Snyk to avoid a vulnerability
