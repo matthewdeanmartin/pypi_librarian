@@ -338,3 +338,4 @@ twine==1.12.1
   - tqdm [required: >=4.14, installed: 4.30.0]
 vulture==1.0
 yolk3k==0.9
+zipp>=3.19.1 # not directly required, pinned by Snyk to avoid a vulnerability
