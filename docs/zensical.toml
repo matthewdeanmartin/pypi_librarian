@@ -6,12 +6,13 @@ docs_dir = "."
 [theme]
 name = "modern"
 
-[nav]
-"Home" = "index.md"
-"Getting Started" = "getting-started.md"
-"CLI Reference" = "cli.md"
-"Python API" = "api.md"
-"Data Models" = "models.md"
-"Bulk Operations" = "bulk.md"
-"Configuration" = "configuration.md"
-"Changelog" = "changelog.md"
+nav = [
+  {"Home" = "index.md"},
+  {"Getting Started" = "getting-started.md"},
+  {"CLI Reference" = "cli.md"},
+  {"Python API" = "api.md"},
+  {"Data Models" = "models.md"},
+  {"Bulk Operations" = "bulk.md"},
+  {"Configuration" = "configuration.md"},
+  {"Changelog" = "changelog.md"},
+]
