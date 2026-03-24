@@ -67,7 +67,8 @@
 - Basic CLI for single-package queries and download
 - Download stats via pypistats.org API
 - Optional GitHub metadata enrichment
-- Async variant of the HTTP layer (optional/bonus)
+- **Async HTTP layer via `httpx` (Phase 2 — required for bulk operations)**
+- Sync wrappers over async for callers who don't want to manage an event loop
 
 ### Out of Scope (explicitly deferred)
 - Package installation (that's pip)
@@ -136,40 +137,61 @@
 
 ---
 
-### Phase 2 — Bulk Download & Resilience
+### Phase 2 — Async HTTP Layer, Bulk Download & Resilience
 
-**Goal**: Make the bulk download story real. This is the library's key differentiator from simple API wrappers.
+**Goal**: Make the bulk download story real by building on a proper async HTTP foundation.
+Single-object queries stay sync-friendly; concurrent bulk operations are natively async.
 
 **Deliverables**:
 
-1. **`Downloader` — fully implemented**
-   - Constructor: `Downloader(packages, dest_dir, policy)`
+1. **Migrate HTTP layer from `requests` to `httpx`**
+   - Replace `JsonEndpoints` sync path with `httpx.Client` (drop-in for callers)
+   - Add `AsyncJsonEndpoints` using `httpx.AsyncClient` for concurrent fetches
+   - Same for `HtmlEndpoints` and `RssEndpoints` — sync `httpx.Client` versions first
+   - `AsyncHtmlEndpoints.all_async() -> AsyncIterator[str]` for non-blocking package enumeration
+   - Add `httpx` to project dependencies; remove `requests` and `types-requests`
+   - All existing unit tests still pass (mock at the `httpx` level using `pytest-httpx`)
+
+2. **`run_async()` helper — zero boilerplate for sync callers**
+   - `from pypi_librarian.utils import run_async`
+   - `results = run_async(repo.get_many_projects(["requests", "flask", "django"]))`
+   - Internally calls `asyncio.run()` (or reuses a running loop via `anyio` if available)
+   - Lets developers call async operations from scripts, notebooks, and REPL without managing event loops
+
+3. **`Repository.get_many()` — concurrent single-object fetches**
+   - `await repo.get_many_projects(names: Iterable[str]) -> list[Project]`
+   - `await repo.get_many_packages(pairs: Iterable[tuple[str, str]]) -> list[Package]`
+   - Bounded concurrency: `semaphore` to cap concurrent requests (default: 10)
+   - Sync wrapper: `repo.get_many_projects_sync(names)` calls `run_async()` internally
+
+4. **`Downloader` — fully implemented**
+   - Constructor: `Downloader(dest_dir, policy)`
    - Policy options: `unzip: bool`, `keep_zips: bool`, `file_types: list[str]` (wheel, sdist, etc.), `max_workers: int`
-   - `download_one(name, version=None) -> DownloadResult`
-   - `download_many(names: Iterable[str]) -> Iterator[DownloadResult]` — parallel, generator-based
-   - Checksum verification against PyPI-provided digests (SHA256)
+   - `await downloader.download_one(name, version=None) -> DownloadResult`
+   - `await downloader.download_many(names: Iterable[str]) -> list[DownloadResult]` — async, bounded concurrency
+   - Sync wrapper: `downloader.download_one_sync(...)` and `downloader.download_many_sync(...)`
+   - Checksum verification against PyPI-provided digests (SHA256) on every file
    - `DownloadResult`: dataclass with `name`, `version`, `files`, `errors`, `skipped`
 
-2. **Resume / fault tolerance**
+5. **Resume / fault tolerance**
    - Track completed packages in a simple checkpoint file (NDJSON per-line)
    - On restart, skip already-downloaded packages
    - Partial results on per-package failure — don't abort the whole batch
-   - `go_or_resume()` reads checkpoint, skips done, continues
+   - `downloader.go_or_resume()` reads checkpoint, skips done, continues
 
-3. **`FetchMetadata` — modernized**
-   - Remove dependency on deleted `qypi_endpoints`
-   - Source package list from `/simple/` (live) or a local snapshot file
+6. **`FetchMetadata` — modernized**
+   - Source package list from `/simple/` (live via `AsyncHtmlEndpoints`) or a local snapshot file
    - Output: one `.json` file per package in target dir
    - Resume logic: skip packages whose `.json` already exists
-   - Configurable concurrency
+   - Async internally; sync wrapper for simple scripting use
 
-4. **Rate limiting**
-   - Wrap all HTTP calls with a token-bucket limiter (use `tenacity` for retry/backoff)
-   - Default: 10 req/sec with jitter
+7. **Rate limiting**
+   - Wrap all HTTP calls with a token-bucket limiter (use `tenacity` for retry/backoff on errors)
+   - Default: 10 req/sec with jitter, implemented as asyncio Semaphore + token bucket
    - Respect `Retry-After` headers on 429
-   - Configurable: `Repository(rate_limit="5/sec")`
+   - Configurable: `Repository(rate_limit=10)` (requests per second)
 
-5. **Bulk CLI commands**
+8. **Bulk CLI commands**
    - `pypi-librarian download <package> [--version V] [--dest DIR]`
    - `pypi-librarian download-many --from-file packages.txt [--dest DIR] [--workers N]`
    - `pypi-librarian fetch-metadata [--dest DIR] [--limit N]`
@@ -239,35 +261,29 @@
 
 ---
 
-### Phase 5 — Async, Provenance & Polish
+### Phase 5 — Provenance & Polish
 
-**Goal**: Production-grade quality. Async support. Trust metadata.
+**Goal**: Production-grade quality. Trust metadata. Complete feature parity.
 
 **Deliverables**:
 
-1. **Async HTTP layer**
-   - `AsyncRepository` using `httpx` instead of `requests`
-   - `await client.get_project("requests")`
-   - All bulk operations natively async
-   - Sync wrappers remain for backwards compatibility
-
-2. **Provenance tracking**
+1. **Provenance tracking**
    - `ReleaseFile.provenance`: source, hash algorithm + digest, verified (bool)
    - Verify downloaded files against PyPI-provided digests
    - Detect and report yanked releases
    - `package.provenance.attested` if PyPI attestations present (PEP 740)
 
-3. **Schema introspection & forward compatibility**
+2. **Schema introspection & forward compatibility**
    - `Repository.discover_schema()` → current API shape
    - Warn (not crash) on unexpected fields; log them for user visibility
    - Feature flag mechanism: `Repository(features=["new-metadata-v2"])`
 
-4. **Plugin/extensibility hooks**
+3. **Plugin/extensibility hooks**
    - `Repository.register_enricher(MyPlugin())` — simple interface
    - `EnricherBase` abstract class: `enrich(package: Package) -> Package`
    - No plugin registry/discovery yet — just a clean extension point
 
-5. **Full CLI parity**
+4. **Full CLI parity**
    - Every library operation accessible via CLI
    - Machine-readable output (`--format json/yaml/toml/ndjson`)
    - Shell-friendly exit codes (0 success, 1 not found, 2 network error, etc.)
@@ -279,17 +295,20 @@
 
 | Feature | Phase |
 |---|---|
-| Fix broken stubs (`all_releases`, `get_packages`) | 1 |
-| Typed dataclass models with `.raw` passthrough | 1 |
-| JSON API endpoint wrappers (clean) | 1 |
-| RSS feed parsing (typed results) | 1 |
-| HTML `/simple/` enumeration | 1 |
-| Minimal CLI (`info`, `versions`, `latest`) | 1 |
-| Unit + integration tests | 1 |
-| `Downloader` — single and bulk | 2 |
+| Fix broken stubs (`all_releases`, `get_packages`) | 1 ✅ |
+| Typed dataclass models with `.raw` passthrough | 1 ✅ |
+| JSON API endpoint wrappers (clean) | 1 ✅ |
+| RSS feed parsing (typed results) | 1 ✅ |
+| HTML `/simple/` enumeration | 1 ✅ |
+| Minimal CLI (`info`, `versions`, `latest`) | 1 ✅ |
+| Unit + integration tests | 1 ✅ |
+| Migrate HTTP layer from `requests` to `httpx` | 2 |
+| `run_async()` helper for sync callers | 2 |
+| `Repository.get_many_*()` — concurrent fetches | 2 |
+| `Downloader` — single and bulk (async internally) | 2 |
 | Checksum verification | 2 |
 | Resume / checkpoint logic | 2 |
-| `FetchMetadata` modernized | 2 |
+| `FetchMetadata` modernized (async internally) | 2 |
 | Rate limiting + retry/backoff | 2 |
 | Bulk CLI (`download`, `download-many`, `fetch-metadata`) | 2 |
 | Disk cache (SQLite) | 3 |
@@ -303,7 +322,6 @@
 | GitHub enrichment (optional) | 4 |
 | Health/activity scoring | 4 |
 | Analytics queries on cache | 4 |
-| `AsyncRepository` (httpx) | 5 |
 | Provenance / digest verification | 5 |
 | Yanked release detection | 5 |
 | PEP 740 attestation awareness | 5 |
@@ -316,8 +334,12 @@
 ## Technical Decisions & Constraints
 
 ### HTTP Client
-- Phase 1–4: `requests` (already a dependency, synchronous, simpler)
-- Phase 5: add `httpx` for async; keep `requests` for sync path
+- Phase 1: `requests` (already a dependency, synchronous, simpler)
+- Phase 2+: replace with `httpx` — supports both sync and async with the same API surface
+  - Single-object queries (`get_project`, `get_package`, etc.) use `httpx.Client` (sync) so callers don't need an event loop
+  - Bulk/concurrent operations (`download_many`, `fetch_metadata`, `stream_projects`) use `httpx.AsyncClient` internally
+  - Convenience helper: `run_async(coro)` in a utils module so developers can call async operations from sync code without boilerplate
+  - `requests` dependency removed once migration is complete; `types-requests` dev dep removed too
 
 ### Data Models
 - Use `@dataclass` not Pydantic (per spec: "use all the good features of dataclasses, not pydantic")
@@ -346,8 +368,9 @@
 
 ### Testing
 - Split integration tests into `@pytest.mark.integration`
-- Use `responses` or `pytest-httpserver` to mock HTTP in unit tests
+- Use `pytest-httpx` to mock HTTP in unit tests (works with both sync `httpx.Client` and async `httpx.AsyncClient`)
 - Keep live integration tests but gate them behind a marker
+- `pytest-asyncio` (with `asyncio_mode = "auto"`) for async test functions
 
 ### Python Version
 - Python 3.10+ (per architecture spec)
