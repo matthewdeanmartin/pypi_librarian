@@ -2,7 +2,6 @@ site_name = "pypi-librarian"
 site_url = "https://pypi-librarian.readthedocs.io/"
 site_description = "A Python library and CLI tool for querying and downloading PyPI package metadata and distribution files."
 docs_dir = "."
-site_dir = "../site"
 
 [theme]
 name = "modern"
