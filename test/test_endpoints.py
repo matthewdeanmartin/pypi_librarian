@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 from unittest.mock import MagicMock, patch
 
+import httpx
 import pytest
 
 from pypi_librarian.html_endpoints import HtmlEndpoints
@@ -24,13 +25,13 @@ from pypi_librarian.rss_endpoints import RssEndpoints
 # ---------------------------------------------------------------------------
 
 
-def _mock_response(body: str, status: int = 200):
-    mock = MagicMock()
-    mock.status_code = status
-    mock.text = body
-    mock.content = body.encode()
-    mock.raise_for_status = MagicMock()
-    return mock
+def _mock_response(body: str, status: int = 200) -> httpx.Response:
+    """Build a minimal httpx.Response for unit-test mocking."""
+    return httpx.Response(
+        status_code=status,
+        text=body,
+        request=httpx.Request("GET", "https://test/"),
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -85,10 +86,15 @@ class TestJsonEndpoints:
 class TestHtmlEndpoints:
     def test_all_returns_strings(self):
         minimal_simple_html = b"<html><body><a href='/simple/requests/'>requests</a></body></html>"
-        mock = _mock_response("")
-        mock.content = minimal_simple_html
+        resp = httpx.Response(
+            status_code=200,
+            content=minimal_simple_html,
+            request=httpx.Request("GET", "https://pypi.org/simple/"),
+        )
         hep = HtmlEndpoints()
-        with patch("pypi_librarian.html_endpoints.requests.get", return_value=mock):
+        mock_client = MagicMock()
+        mock_client.get.return_value = resp
+        with patch.object(hep, "_get_client", return_value=mock_client):
             names = list(hep.all())
         assert "requests" in names
 

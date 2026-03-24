@@ -13,14 +13,22 @@ Typical usage::
 
     for release in project.releases:
         print(release.version, len(release.files))
+
+Bulk async usage::
+
+    from pypi_librarian.utils import run_async
+
+    repo = Repository()
+    projects = run_async(repo.get_many_projects_async(["requests", "flask"]))
 """
 
 from __future__ import annotations
 
-from typing import Iterator
+import asyncio
+from typing import AsyncIterator, Iterator
 
-from pypi_librarian.html_endpoints import HtmlEndpoints
-from pypi_librarian.json_endpoints import JsonEndpoints
+from pypi_librarian.html_endpoints import AsyncHtmlEndpoints, HtmlEndpoints
+from pypi_librarian.json_endpoints import AsyncJsonEndpoints, JsonEndpoints
 from pypi_librarian.models import (
     NewPackage,
     NewRelease,
@@ -31,8 +39,11 @@ from pypi_librarian.models import (
     _project_from_json,
 )
 from pypi_librarian.rss_endpoints import RssEndpoints
+from pypi_librarian.utils import run_async
 
 __all__ = ["Repository"]
+
+_DEFAULT_CONCURRENCY = 10
 
 
 class Repository:
@@ -42,16 +53,23 @@ class Repository:
     Args:
         base_url: Root URL of the PyPI instance.  Defaults to
             ``https://pypi.org``.  Can be pointed at a compatible mirror.
+        max_concurrency: Maximum number of concurrent HTTP requests for
+            bulk async operations.  Defaults to 10.
     """
 
-    def __init__(self, base_url: str = "https://pypi.org") -> None:
+    def __init__(
+        self,
+        base_url: str = "https://pypi.org",
+        max_concurrency: int = _DEFAULT_CONCURRENCY,
+    ) -> None:
         self.base_url = base_url.rstrip("/")
+        self.max_concurrency = max_concurrency
         self._json = JsonEndpoints(repo_url=f"{self.base_url}/pypi")
         self._html = HtmlEndpoints()
         self._rss = RssEndpoints()
 
     # ------------------------------------------------------------------
-    # Single-object queries
+    # Single-object queries (sync)
     # ------------------------------------------------------------------
 
     def get_project(self, name: str) -> Project:
@@ -114,6 +132,19 @@ class Repository:
         """
         yield from self._html.all()
 
+    async def get_all_package_names_async(self) -> AsyncIterator[str]:
+        """
+        Yield every package name registered on PyPI (async).
+
+        Backed by the PEP 503 Simple Repository API (``/simple/``).
+        """
+        async_html = AsyncHtmlEndpoints()
+        try:
+            async for name in async_html.all_async():
+                yield name
+        finally:
+            await async_html.close()
+
     def project_names_by_user(self, name: str) -> list[str]:
         """Return the list of package names maintained by *name*."""
         if not name:
@@ -138,6 +169,83 @@ class Repository:
                 # skip packages that were removed between scrape and fetch
                 continue
         return projects
+
+    # ------------------------------------------------------------------
+    # Bulk async queries
+    # ------------------------------------------------------------------
+
+    async def get_many_projects_async(self, names: list[str]) -> list[Project]:
+        """
+        Fetch metadata for multiple packages concurrently.
+
+        Returns a list of :class:`Project` objects in the same order as *names*.
+        Packages that are not found on PyPI are silently skipped (the returned
+        list may be shorter than the input).
+
+        Uses :attr:`max_concurrency` to limit parallel requests.
+        """
+        sem = asyncio.Semaphore(self.max_concurrency)
+        async_json = AsyncJsonEndpoints(repo_url=f"{self.base_url}/pypi")
+
+        async def _fetch_one(name: str) -> Project | None:
+            async with sem:
+                data = await async_json.package_json(name)
+            if data is None:
+                return None
+            return _project_from_json(data)
+
+        try:
+            results = await asyncio.gather(*[_fetch_one(n) for n in names])
+        finally:
+            await async_json.close()
+        return [p for p in results if p is not None]
+
+    def get_many_projects(self, names: list[str]) -> list[Project]:
+        """
+        Sync wrapper for :meth:`get_many_projects_async`.
+
+        Uses :func:`~pypi_librarian.utils.run_async` so callers don't need
+        to manage an event loop.
+        """
+        return run_async(self.get_many_projects_async(names))
+
+    async def get_many_packages_async(
+        self, items: list[tuple[str, str]]
+    ) -> list[Package]:
+        """
+        Fetch metadata for multiple (name, version) pairs concurrently.
+
+        Returns a list of :class:`Package` objects.  Pairs that are not found
+        on PyPI are silently skipped.
+
+        Uses :attr:`max_concurrency` to limit parallel requests.
+        """
+        sem = asyncio.Semaphore(self.max_concurrency)
+        async_json = AsyncJsonEndpoints(repo_url=f"{self.base_url}/pypi")
+
+        async def _fetch_one(name: str, version: str) -> Package | None:
+            async with sem:
+                data = await async_json.package_version_json(name, version)
+            if data is None:
+                return None
+            return _package_from_json(data)
+
+        try:
+            results = await asyncio.gather(
+                *[_fetch_one(n, v) for n, v in items]
+            )
+        finally:
+            await async_json.close()
+        return [p for p in results if p is not None]
+
+    def get_many_packages(self, items: list[tuple[str, str]]) -> list[Package]:
+        """
+        Sync wrapper for :meth:`get_many_packages_async`.
+
+        Uses :func:`~pypi_librarian.utils.run_async` so callers don't need
+        to manage an event loop.
+        """
+        return run_async(self.get_many_packages_async(items))
 
     # ------------------------------------------------------------------
     # Feed queries

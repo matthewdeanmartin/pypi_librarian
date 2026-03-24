@@ -13,8 +13,8 @@ authors = [
 ]
 requires-python = ">=3.10"
 dependencies = [
+  "httpx",
   "lxml",
-  "requests",
 ]
 classifiers = [
   "License :: OSI Approved :: MIT License",
@@ -40,10 +40,11 @@ dev = [
   "detect-secrets",
   "mypy",
   "pytest",
+  "pytest-asyncio",
   "pytest-cov",
+  "pytest-httpx",
   "ruff",
   "twine",
-  "types-requests",
   "vulture",
 ]
 
@@ -79,6 +80,7 @@ ignore = ["E501"]
 
 [tool.pytest.ini_options]
 testpaths = ["test"]
+asyncio_mode = "auto"
 markers = [
   "integration: marks tests that require network access to PyPI (deselect with -m 'not integration')",
 ]

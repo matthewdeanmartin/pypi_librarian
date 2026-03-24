@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import xml.etree.ElementTree as ET
 
-import requests
+import httpx
 
 from pypi_librarian.models import NewPackage, NewRelease
 from pypi_librarian.models import _new_package_from_rss_item, _new_release_from_rss_item
@@ -26,6 +26,14 @@ _UPDATES_URL = "https://pypi.org/rss/updates.xml"
 
 class RssEndpoints:
     """Typed wrappers around the PyPI RSS feeds."""
+
+    def __init__(self) -> None:
+        self._client: httpx.Client | None = None
+
+    def _get_client(self) -> httpx.Client:
+        if self._client is None:
+            self._client = httpx.Client(timeout=30.0)
+        return self._client
 
     def newest_packages(self) -> list[NewPackage]:
         """Return typed items from the newest-packages feed."""
@@ -50,7 +58,7 @@ class RssEndpoints:
     # ------------------------------------------------------------------
 
     def _fetch(self, url: str) -> str:
-        response = requests.get(url)
+        response = self._get_client().get(url)
         response.raise_for_status()
         return response.text
 
@@ -67,3 +75,9 @@ class RssEndpoints:
             _new_release_from_rss_item(item)
             for item in root.findall("channel/item")
         ]
+
+    def close(self) -> None:
+        """Close the underlying HTTP client."""
+        if self._client is not None:
+            self._client.close()
+            self._client = None

@@ -7,30 +7,41 @@ PEP 503 Simple Repository API:
 
 User profile pages:
   GET /user/<username>/  — packages maintained by a user
+
+Provides both sync (``HtmlEndpoints``) and async (``AsyncHtmlEndpoints``)
+classes.
 """
 
 from __future__ import annotations
 
-from typing import Iterator
+from typing import AsyncIterator, Iterator
 
-import requests
+import httpx
 from lxml import html
 
-__all__ = ["HtmlEndpoints"]
+__all__ = ["AsyncHtmlEndpoints", "HtmlEndpoints"]
 
 
 class HtmlEndpoints:
-    """HTML scraping of pypi.org pages."""
+    """HTML scraping of pypi.org pages (sync, backed by ``httpx.Client``)."""
+
+    def __init__(self) -> None:
+        self._client: httpx.Client | None = None
+
+    def _get_client(self) -> httpx.Client:
+        if self._client is None:
+            self._client = httpx.Client(timeout=60.0)
+        return self._client
 
     def project_page(self, name: str) -> str:
         """Fetch raw HTML of a project page."""
-        response = requests.get(f"https://pypi.org/project/{name}/")
+        response = self._get_client().get(f"https://pypi.org/project/{name}/")
         response.raise_for_status()
         return response.text
 
     def user_page(self, name: str) -> str:
         """Fetch raw HTML of a user profile page."""
-        response = requests.get(f"https://pypi.org/user/{name}/")
+        response = self._get_client().get(f"https://pypi.org/user/{name}/")
         response.raise_for_status()
         return response.text
 
@@ -66,7 +77,43 @@ class HtmlEndpoints:
         Uses the PEP 503 Simple Repository API (``/simple/``), which is the
         recommended programmatic endpoint for enumerating all packages.
         """
-        response = requests.get("https://pypi.org/simple/")
+        response = self._get_client().get("https://pypi.org/simple/")
         response.raise_for_status()
         tree = html.fromstring(response.content)
         yield from tree.xpath("//a/text()")
+
+    def close(self) -> None:
+        """Close the underlying HTTP client."""
+        if self._client is not None:
+            self._client.close()
+            self._client = None
+
+
+class AsyncHtmlEndpoints:
+    """Async HTML scraping of pypi.org pages (backed by ``httpx.AsyncClient``)."""
+
+    def __init__(self) -> None:
+        self._client: httpx.AsyncClient | None = None
+
+    def _get_client(self) -> httpx.AsyncClient:
+        if self._client is None:
+            self._client = httpx.AsyncClient(timeout=60.0)
+        return self._client
+
+    async def all_async(self) -> AsyncIterator[str]:
+        """
+        Yield every package name registered on PyPI (async).
+
+        Uses the PEP 503 Simple Repository API (``/simple/``).
+        """
+        response = await self._get_client().get("https://pypi.org/simple/")
+        response.raise_for_status()
+        tree = html.fromstring(response.content)
+        for name in tree.xpath("//a/text()"):
+            yield name
+
+    async def close(self) -> None:
+        """Close the underlying async HTTP client."""
+        if self._client is not None:
+            await self._client.aclose()
+            self._client = None

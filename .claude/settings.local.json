@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(python -m pytest test/ -m \"not integration\" -v)",
-      "Bash(uv run:*)"
+      "Bash(uv run:*)",
+      "Bash(pip install:*)",
+      "Bash(python:*)"
     ]
   }
 }
