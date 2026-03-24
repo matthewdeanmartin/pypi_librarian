@@ -1,0 +1,18 @@
+site_name = "pypi-librarian"
+site_url = "https://pypi-librarian.readthedocs.io/"
+site_description = "A Python library and CLI tool for querying and downloading PyPI package metadata and distribution files."
+docs_dir = "."
+site_dir = "../site"
+
+[theme]
+name = "modern"
+
+[nav]
+"Home" = "index.md"
+"Getting Started" = "getting-started.md"
+"CLI Reference" = "cli.md"
+"Python API" = "api.md"
+"Data Models" = "models.md"
+"Bulk Operations" = "bulk.md"
+"Configuration" = "configuration.md"
+"Changelog" = "changelog.md"
