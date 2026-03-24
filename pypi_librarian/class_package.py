@@ -1,28 +1,8 @@
 # coding=utf-8
 """
-A single release
+Re-exports Package from models for backwards compatibility.
 """
 
-from pypi_librarian.json_endpoints import JsonEndpoints
+from pypi_librarian.models import Package as Package
 
-
-class Package(object):
-    """
-    Properties and state for Package
-    """
-
-    def __init__(self, name: str, version: str) -> None:
-        """
-        Initialize values
-        :param name:
-        :param version:
-        """
-        self.name = name
-        self.version = version
-        je = JsonEndpoints()
-        self.metadata = je.package_json(self.name)
-        self.normalized_name = self.metadata["info"]["name"]
-        self.owner = self.metadata["info"]["author_email"]
-
-    def stats(self) -> None:
-        return None
+__all__ = ["Package"]

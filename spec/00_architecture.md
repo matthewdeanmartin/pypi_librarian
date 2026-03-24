@@ -1,0 +1,10 @@
+- Bash friendly
+  - argparse, all the good features
+  - good translation of errors to bash error codes
+  - supports logging and switch for changing logging levels across all python logging levels
+- Python friendly
+  - dataclass models
+  - `__all__` on each module to show what is public (in __init__) and internal/public (in each module)
+  - type annotations everywhere
+- support python 3.10 forward
+- 

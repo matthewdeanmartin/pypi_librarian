@@ -10,7 +10,6 @@ import time
 from typing import Callable, List
 
 from pypi_librarian.json_endpoints import JsonEndpoints
-from pypi_librarian.qypi_endpoints import info
 from pypi_librarian.utils import locate_file
 
 
@@ -92,7 +91,6 @@ if __name__ == "__main__":
         def go():
             je = JsonEndpoints()
             invoker = je.package_json_as_text
-            invoker = info
             fetcher = FetchMetadata("tmp", invoker, 20)
             fetcher.generate_packages()
 

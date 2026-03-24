@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m pytest test/ -m \"not integration\" -v)",
+      "Bash(uv run:*)"
+    ]
+  }
+}

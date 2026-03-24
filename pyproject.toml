@@ -11,14 +11,10 @@ license = { text = "MIT" }
 authors = [
   { name = "Matthew Martin", email = "matthewdeanmartin@gmail.com" },
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dependencies = [
-  "docopt>=0.6.2",
   "lxml",
-  "pypi-xmlrpc",
-  "qypi",
   "requests",
-  "yolk3k",
 ]
 classifiers = [
   "License :: OSI Approved :: MIT License",
@@ -34,7 +30,7 @@ Homepage = "https://github.com/matthewdeanmartin/pypi_librarian"
 Repository = "https://github.com/matthewdeanmartin/pypi_librarian"
 
 [project.scripts]
-pypi_librarian = "pypi_librarian.__main__:process_docopts"
+pypi-librarian = "pypi_librarian.__main__:main"
 
 [dependency-groups]
 dev = [
@@ -68,11 +64,11 @@ packages = ["pypi_librarian"]
 
 [tool.black]
 line-length = 88
-target-version = ["py38"]
+target-version = ["py310"]
 
 [tool.ruff]
 line-length = 88
-target-version = "py38"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
@@ -83,11 +79,13 @@ ignore = ["E501"]
 
 [tool.pytest.ini_options]
 testpaths = ["test"]
+markers = [
+  "integration: marks tests that require network access to PyPI (deselect with -m 'not integration')",
+]
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.10"
 namespace_packages = false
 ignore_missing_imports = true
 warn_unused_configs = true
 pretty = true
-
