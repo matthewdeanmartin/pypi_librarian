@@ -13,6 +13,11 @@ Quick start::
 
 from pypi_librarian._version import __version__ as __version__
 from pypi_librarian.class_repo import Repository as Repository
+from pypi_librarian.download import (
+    DownloadPolicy as DownloadPolicy,
+    DownloadResult as DownloadResult,
+    Downloader as Downloader,
+)
 from pypi_librarian.models import (
     NewPackage as NewPackage,
     NewRelease as NewRelease,
@@ -26,6 +31,9 @@ from pypi_librarian.models import (
 
 __all__ = [
     "__version__",
+    "DownloadPolicy",
+    "DownloadResult",
+    "Downloader",
     "NewPackage",
     "NewRelease",
     "Package",

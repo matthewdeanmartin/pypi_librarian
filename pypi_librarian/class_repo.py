@@ -27,6 +27,8 @@ from __future__ import annotations
 import asyncio
 from typing import AsyncIterator, Iterator
 
+from pypi_librarian.download import DownloadPolicy, DownloadResult, Downloader
+from pypi_librarian.fetch_metadata import FetchMetadata
 from pypi_librarian.html_endpoints import AsyncHtmlEndpoints, HtmlEndpoints
 from pypi_librarian.json_endpoints import AsyncJsonEndpoints, JsonEndpoints
 from pypi_librarian.models import (
@@ -258,6 +260,75 @@ class Repository:
     def latest_updates(self, count: int = 40) -> list[NewRelease]:
         """Return the most recently updated packages from the RSS feed."""
         return self._rss.latest_updates()[:count]
+
+    # ------------------------------------------------------------------
+    # Download
+    # ------------------------------------------------------------------
+
+    def download(
+        self,
+        name: str,
+        version: str | None = None,
+        dest_dir: str = ".",
+        policy: DownloadPolicy | None = None,
+    ) -> DownloadResult:
+        """
+        Download distribution files for a single package.
+
+        Args:
+            name: Package name.
+            version: Specific version, or ``None`` for latest.
+            dest_dir: Directory to save files into.
+            policy: Download configuration.
+
+        Returns a :class:`~pypi_librarian.download.DownloadResult`.
+        """
+        dl = Downloader(dest_dir=dest_dir, policy=policy, base_url=self.base_url)
+        return dl.download_one_sync(name, version)
+
+    def download_many(
+        self,
+        names: list[str],
+        dest_dir: str = ".",
+        policy: DownloadPolicy | None = None,
+        resume: bool = False,
+    ) -> list[DownloadResult]:
+        """
+        Download distribution files for multiple packages.
+
+        Args:
+            names: Package names.
+            dest_dir: Directory to save files into.
+            policy: Download configuration.
+            resume: If ``True``, skip packages completed in a previous run.
+
+        Returns a list of :class:`~pypi_librarian.download.DownloadResult`.
+        """
+        dl = Downloader(dest_dir=dest_dir, policy=policy, base_url=self.base_url)
+        if resume:
+            return dl.go_or_resume_sync(names)
+        return dl.download_many_sync(names)
+
+    def fetch_metadata(
+        self,
+        dest_dir: str = "metadata",
+        names: list[str] | None = None,
+        limit: int = 0,
+    ) -> int:
+        """
+        Fetch and save JSON metadata files for packages.
+
+        Args:
+            dest_dir: Directory to write ``.json`` files into.
+            names: Explicit package list, or ``None`` to source from ``/simple/``.
+            limit: Maximum packages to fetch (0 = unlimited).
+
+        Returns the number of packages successfully fetched.
+        """
+        fm = FetchMetadata(
+            dest_dir=dest_dir, limit=limit, base_url=self.base_url
+        )
+        return fm.run(names)
 
     # ------------------------------------------------------------------
     # Search (not available via public API)

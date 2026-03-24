@@ -36,11 +36,28 @@
 - **`lxml` is still used** for HTML parsing (`/simple/` page). It is not being replaced.
 - **XML-RPC** is used for `packages_for_user()` — this is the only reliable way to get user package lists since PyPI blocks HTML scraping of user pages.
 
+## Download & Bulk Operations
+
+- **`Downloader`** in `download.py` handles single and bulk file downloads with SHA256 checksum verification, bounded concurrency, and NDJSON checkpoint/resume.
+- **`FetchMetadata`** in `fetch_metadata.py` bulk-fetches JSON metadata files (one `.json` per package). Resume-safe — skips packages whose `.json` already exists.
+- **Rate limiting** in `rate_limit.py`: `AsyncTokenBucket` / `SyncTokenBucket` (default 10 req/s), `RateLimiter` (handles 429 + Retry-After), `retry_on_transient` decorator (tenacity, retries on 429/5xx/timeouts).
+- **Mocking Downloader in tests**: Patch `pypi_librarian.download.AsyncJsonEndpoints` at the import site. For file downloads, mock `_download_file` on the Downloader instance to avoid real HTTP. Use `AsyncMock` for all async methods including `close()`.
+- **Checkpoint files**: `.pypi_checkpoint.ndjson` in the dest directory. Each line is a JSON record with `name`, `version`, `files`, `errors`. The `_Checkpoint` class handles persistence.
+
+## CLI Commands
+
+- `pypi-librarian info <package>` — print metadata
+- `pypi-librarian versions <package>` — list versions
+- `pypi-librarian latest` — newest packages from RSS
+- `pypi-librarian download <package> [--version V] [--dest DIR] [--types ...]` — download one package
+- `pypi-librarian download-many --from-file packages.txt [--dest DIR] [--workers N] [--rate R] [--resume]` — bulk download
+- `pypi-librarian fetch-metadata [--dest DIR] [--limit N] [--from-file names.txt]` — bulk metadata fetch
+
 ## Spec & Roadmap
 
 - The canonical spec is `spec/02_spec_final.md`. It contains the phased roadmap.
 - Phase 1 is complete (models, endpoints, Repository, CLI, tests).
-- Phase 2 is the httpx/async migration + bulk download + resilience.
+- Phase 2 is complete (httpx/async migration, Downloader, FetchMetadata, rate limiting, bulk CLI).
 - Do not reference or import from deleted modules (`pip_endpoints`, `qypi_endpoints`, `xml_rpc_endpoints`, `yolk_endpoints`).
 
 ## Common Pitfalls
