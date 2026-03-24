@@ -12,8 +12,11 @@ Options:
   -h --help            Show this screen.
 
 """
-from typing import Optional, Dict, Union
+
+from typing import Dict, Optional, Union
+
 from docopt import docopt
+
 from pypi_librarian.__init__ import __version__
 
 

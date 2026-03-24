@@ -5,5 +5,6 @@ Test command line interface
 
 import pypi_librarian.__main__ as main
 
+
 def test_main():
-    main.process_docopts({"version":True})
+    main.process_docopts({"version": True})

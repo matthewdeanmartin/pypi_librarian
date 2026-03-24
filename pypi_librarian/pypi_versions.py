@@ -5,6 +5,7 @@ This script processes the output of
 curl -o packages.html -0 https://pypi.python.org/simple/  --location
 
 """
+
 # https://python-forum.io/Thread-pip-list-available-packages
 
 # download file
@@ -14,9 +15,7 @@ curl -o packages.html -0 https://pypi.python.org/simple/  --location
 
 import os
 import subprocess
-
-# https://pypi.org/simple/epicurus/
-from typing import List
+from typing import Iterable, List
 
 import requests
 
@@ -29,13 +28,13 @@ def execute_get_text(command: str) -> str:
     """
     try:
         result = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
-    except subprocess.CalledProcessError as err:
+    except subprocess.CalledProcessError:
         raise
 
-    return result
+    return result.decode("utf-8")
 
 
-def download_package(rows: str) -> None:
+def download_package(rows: Iterable[str]) -> None:
     """
     Download a package locally for opening & inspection
     :param rows:
@@ -55,7 +54,7 @@ def download_package(rows: str) -> None:
     print(result)
 
 
-def package_info(rows: str) -> str:
+def package_info(rows: Iterable[str]) -> str:
     """
     Parse html sections
     :param rows:
@@ -68,7 +67,7 @@ def package_info(rows: str) -> str:
             if ".zip" in url or ".gz" in url:
                 print(url)
                 last = url
-        except:
+        except Exception:
             pass
     return last
 
@@ -102,12 +101,12 @@ def read_packages() -> None:
                 print(package_name + " done")
                 continue
             print(url)
-        except:
+        except Exception:
             continue
 
         response = requests.get(url)
 
-        with open("meta/" + url.split("/")[-2], "w") as file:
+        with open("meta/" + url.split("/")[-2], "w"):
             download_package(response.text.split("\n"))
             # file.write(response.text)
 

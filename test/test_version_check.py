@@ -2,8 +2,10 @@
 """
 Test if version is most recent
 """
+
 from pypi_librarian import Repository
 from pypi_librarian._version import __version__
+
 
 def test_get_vers():
     # scenarios
@@ -19,7 +21,7 @@ def test_get_vers():
     else:
         # python world doesn't follow any single versioning system, so saying if 1 version is lesser or greater is
         # non-trivial.
-        print("Not same as latest : {0} vs {1}".format(__version__, current.version) )
+        print("Not same as latest : {0} vs {1}".format(__version__, current.version))
 
 
 # # OK.... this is failing on basic scenarios.
@@ -38,4 +40,3 @@ def test_get_vers():
 #     # pretty good deserialization of the json object for a package/project
 #     # and that is it. Lib has no other fetaures.
 #     print(info)
-

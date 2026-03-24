@@ -2,6 +2,7 @@
 """
 Data and actions for user
 """
+
 from typing import List
 
 import pypi_xmlrpc

@@ -6,9 +6,11 @@ List of all packages in one huge HTML doc.
 GET /simple/
 
 """
+
 from typing import List
-from lxml import html
+
 import requests
+from lxml import html
 
 
 class HtmlEndpoints(object):

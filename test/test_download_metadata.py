@@ -2,6 +2,7 @@
 """
 Just exercise code
 """
+
 import time
 
 from pypi_librarian.fetch_metadata import FetchMetadata
@@ -15,7 +16,6 @@ def test_download_anyone():
         je = JsonEndpoints()
         fetcher = FetchMetadata("tmp", je.package_json_as_text, 2)
         fetcher.generate_packages()
-
 
     go()
     t1 = time.time()

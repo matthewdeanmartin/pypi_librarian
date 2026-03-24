@@ -2,6 +2,7 @@
 """
 A collection of versioned packages, ie. releases.
 """
+
 from typing import List
 
 import pypi_xmlrpc

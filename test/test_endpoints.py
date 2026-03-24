@@ -2,10 +2,13 @@
 """
 Test all kinds of endpoints in one place
 """
+
+import pypi_xmlrpc
+
 from pypi_librarian.html_endpoints import HtmlEndpoints
 from pypi_librarian.json_endpoints import JsonEndpoints
 from pypi_librarian.rss_endpoints import RssEndpoints
-import pypi_xmlrpc
+
 
 def test_html():
     hep = HtmlEndpoints()
@@ -23,10 +26,12 @@ def test_json():
     print(je.package_json("jiggle_version"))
     print(je.package_version_json("jiggle_version", "1.0.68"))
 
+
 def test_rss():
     client = RssEndpoints()
     print(client.latest_packages())
     print(client.newest_packages())
+
 
 def test_xmlrpc():
     # TODO: This doesn't test *my* code.
@@ -41,9 +46,7 @@ def test_xmlrpc():
     print(x)
     x = pypi_xmlrpc.package_roles(name)  # return list of package roles
     print(x)
-    x = pypi_xmlrpc.release_data(
-        name, version
-    )  # return dictionary with release data
+    x = pypi_xmlrpc.release_data(name, version)  # return dictionary with release data
     print(x)
     x = pypi_xmlrpc.release_urls(name, version)  # return list of release urls
     print(x)

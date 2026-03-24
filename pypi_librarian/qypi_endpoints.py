@@ -23,11 +23,10 @@ Commands:
 Functionality of qypi spread between QyPI class and command line interface.
 
 """
-import json
-from typing import List, Any
-import qypi
-import sys
+
 import subprocess
+import sys
+from typing import Any, List
 
 
 def _prologue() -> List[str]:

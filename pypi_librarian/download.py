@@ -5,7 +5,7 @@ Code to download a package.
 Not to install it, but to download it, unzip it, etc.
 """
 
-from typing import List, Dict
+from typing import Dict, List
 
 
 class Downloader(object):

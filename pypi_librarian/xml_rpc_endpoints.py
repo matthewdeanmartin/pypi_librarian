@@ -24,7 +24,8 @@ https://warehouse.readthedocs.io/api-reference/xml-rpc/
 # ...     if entry[0] == 'twine':
 # ...         print(entry[1], " ", entry[3], " ", entry[2])
 #
-# """
+#"""
+
 import pypi_xmlrpc
 
 
@@ -39,8 +40,7 @@ def list_packages() -> None:
         import xmlrpc.client as xmlrpclib
 
     client = xmlrpclib.ServerProxy("https://pypi.python.org/pypi")
-    # get a list of package names
-    packages = client.list_packages()
+    client.list_packages()
 
 
 if __name__ == "__main__":

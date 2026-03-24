@@ -15,15 +15,16 @@ ref https://github.com/cooperlees/pypistats
 (similar named but different service: https://github.com/hugovk/pypistats)
 
 """
+
 import json
-from typing import Any
+from typing import Any, Optional
 
 import requests
 
 
 class JsonEndpoints(object):
     def __init__(self, repo_url="https://pypi.python.org/pypi") -> None:
-        self.s = None
+        self.s: Optional[requests.Session] = None
         self.index_url = repo_url
 
     def get(self, *path) -> requests.Response:

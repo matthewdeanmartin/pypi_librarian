@@ -1,0 +1,93 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pypi_librarian"
+dynamic = ["version"]
+description = "Library for querying and downloading PyPI package metadata and files."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+  { name = "Matthew Martin", email = "matthewdeanmartin@gmail.com" },
+]
+requires-python = ">=3.8"
+dependencies = [
+  "docopt>=0.6.2",
+  "lxml",
+  "pypi-xmlrpc",
+  "qypi",
+  "requests",
+  "yolk3k",
+]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Topic :: Software Development :: Libraries",
+]
+
+[project.urls]
+Homepage = "https://github.com/matthewdeanmartin/pypi_librarian"
+Repository = "https://github.com/matthewdeanmartin/pypi_librarian"
+
+[project.scripts]
+pypi_librarian = "pypi_librarian.__main__:process_docopts"
+
+[dependency-groups]
+dev = [
+  "bandit",
+  "black",
+  "build",
+  "detect-secrets",
+  "mypy",
+  "pytest",
+  "pytest-cov",
+  "ruff",
+  "twine",
+  "types-requests",
+  "vulture",
+]
+
+[tool.hatch.version]
+path = "pypi_librarian/_version.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/LICENSE",
+  "/README.md",
+  "/pyproject.toml",
+  "/pypi_librarian",
+  "/test",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["pypi_librarian"]
+
+[tool.black]
+line-length = 88
+target-version = ["py38"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py38"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"test/*.py" = ["F401"]
+
+[tool.pytest.ini_options]
+testpaths = ["test"]
+
+[tool.mypy]
+python_version = "3.9"
+namespace_packages = false
+ignore_missing_imports = true
+warn_unused_configs = true
+pretty = true
+

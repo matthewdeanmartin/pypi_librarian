@@ -25,7 +25,7 @@ Schema
 
 **Projects have maintainers and releases.** One of these releases is the main, most recent release that people care about. The rest are history. Pypi itself doesn't provide change notification, nor download stats. This is now provided by third party services.
 
-**Releases have a package.** The package is a compressed file, either gz, zip or wheel which has some meta data in it as a file, PKG_INFO and more. Dependencies could be in setup.py, requirements.txt or Pipfile or nowhere.
+**Releases have a package.** The package is a compressed file, either gz, zip or wheel which has some meta data in it as a file, PKG_INFO and more. Dependencies could be in `pyproject.toml`, legacy packaging files, or nowhere.
 
 
 Existing Solutions
@@ -43,8 +43,8 @@ Parsing the setup.py/PKG_INFO files
 
 similar things
 - [bento](https://pypi.org/project/bento/) - a tool for making pip compatible packages, using a yaml-like bento file instead of a setup.py file
-- [poetry](https://poetry.eustace.io/docs/pyproject/) - creates packages, uses a pypackage.toml file 
-- [pipenv](https://poetry.eustace.io/docs/pipenv/) The pipfile Toml file is a sort of metadata file.
+- [poetry](https://python-poetry.org/docs/pyproject/) - creates packages, uses a `pyproject.toml` file
+- tools built around `pyproject.toml` make it easier to keep project metadata and dependency definitions in one place.
 
 
 Package Statitics
@@ -69,3 +69,15 @@ I plan to implement support for pypi & compatible mirrors first.
 
 - packagecloud.io
 - gemfury
+
+## Development
+
+This repository now uses `uv` for environment and dependency management, `pyproject.toml` for package metadata and tool configuration, Hatch for builds, and `Makefile` targets for common workflows.
+
+Common commands:
+
+- `uv sync --group dev`
+- `make format`
+- `make lint`
+- `make test`
+- `make build`

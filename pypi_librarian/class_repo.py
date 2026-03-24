@@ -2,6 +2,7 @@
 """
 Data and actions representing a repo, which usually is just pypi. Could also be some mirror or other pypi compatible repo.
 """
+
 from typing import List
 
 from pypi_librarian.class_package import Package

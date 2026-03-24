@@ -2,14 +2,15 @@
 """
 Fetch meta data to folder and/or sqlite db
 """
+
 import ntpath
 import os
-from typing import Callable, List
 import random
 import time
+from typing import Callable, List
 
-from pypi_librarian.qypi_endpoints import info
 from pypi_librarian.json_endpoints import JsonEndpoints
+from pypi_librarian.qypi_endpoints import info
 from pypi_librarian.utils import locate_file
 
 
@@ -49,7 +50,6 @@ class FetchMetadata(object):
             if "simple" not in row:
                 continue
             try:
-                url = "https://pypi.org" + row.split('"')[1]
                 package_name = row.split('"')[1].replace("simple/", "").replace("/", "")
 
                 if package_name in done:
@@ -93,7 +93,7 @@ if __name__ == "__main__":
             je = JsonEndpoints()
             invoker = je.package_json_as_text
             invoker = info
-            fetcher = FetchMetadata("tmp", invoker , 20)
+            fetcher = FetchMetadata("tmp", invoker, 20)
             fetcher.generate_packages()
 
         go()

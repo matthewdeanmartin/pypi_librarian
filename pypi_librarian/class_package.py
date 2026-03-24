@@ -2,6 +2,7 @@
 """
 A single release
 """
+
 from pypi_librarian.json_endpoints import JsonEndpoints
 
 
