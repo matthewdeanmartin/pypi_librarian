@@ -18,6 +18,8 @@ from pypi_librarian.download import (
     DownloadResult as DownloadResult,
     Downloader as Downloader,
 )
+from pypi_librarian.github import GitHubInfo as GitHubInfo
+from pypi_librarian.health import HealthScore as HealthScore
 from pypi_librarian.models import (
     NewPackage as NewPackage,
     NewRelease as NewRelease,
@@ -28,12 +30,16 @@ from pypi_librarian.models import (
     ReleaseFile as ReleaseFile,
     User as User,
 )
+from pypi_librarian.pypistats import DownloadStats as DownloadStats
 
 __all__ = [
     "__version__",
     "DownloadPolicy",
     "DownloadResult",
+    "DownloadStats",
     "Downloader",
+    "GitHubInfo",
+    "HealthScore",
     "NewPackage",
     "NewRelease",
     "Package",

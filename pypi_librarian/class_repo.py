@@ -29,6 +29,8 @@ from typing import AsyncIterator, Iterator
 
 from pypi_librarian.download import DownloadPolicy, DownloadResult, Downloader
 from pypi_librarian.fetch_metadata import FetchMetadata
+from pypi_librarian.github import GitHubInfo, fetch_github_info_for_project
+from pypi_librarian.health import HealthScore, score_project
 from pypi_librarian.html_endpoints import AsyncHtmlEndpoints, HtmlEndpoints
 from pypi_librarian.json_endpoints import AsyncJsonEndpoints, JsonEndpoints
 from pypi_librarian.models import (
@@ -40,6 +42,7 @@ from pypi_librarian.models import (
     _package_from_json,
     _project_from_json,
 )
+from pypi_librarian.pypistats import DownloadStats, fetch_download_stats
 from pypi_librarian.rss_endpoints import RssEndpoints
 from pypi_librarian.utils import run_async
 
@@ -329,6 +332,101 @@ class Repository:
             dest_dir=dest_dir, limit=limit, base_url=self.base_url
         )
         return fm.run(names)
+
+    # ------------------------------------------------------------------
+    # Enrichment — Phase 4
+    # ------------------------------------------------------------------
+
+    def get_download_stats(self, name: str) -> DownloadStats | None:
+        """
+        Fetch download statistics for *name* from pypistats.org.
+
+        Returns a :class:`~pypi_librarian.pypistats.DownloadStats` dataclass
+        with ``last_day``, ``last_week``, and ``last_month`` counts, or
+        ``None`` if the package is unknown to pypistats.
+        """
+        return fetch_download_stats(name)
+
+    def get_github_info(
+        self,
+        name: str,
+        *,
+        token: str | None = None,
+    ) -> GitHubInfo | None:
+        """
+        Fetch GitHub repository metadata for *name*.
+
+        Extracts the GitHub URL from the package's PyPI metadata, then
+        queries the GitHub REST API.  Returns ``None`` if the package has
+        no GitHub URL, or if the request fails gracefully (404, rate limit).
+
+        Args:
+            name: PyPI package name.
+            token: GitHub personal-access token.  Falls back to the
+                ``GITHUB_TOKEN`` environment variable.
+        """
+        project = self.get_project(name)
+        return fetch_github_info_for_project(
+            project.info.project_url,
+            project.info.home_page,
+            token=token,
+        )
+
+    def health_score(
+        self,
+        name: str,
+        *,
+        include_downloads: bool = True,
+        include_github: bool = True,
+        github_token: str | None = None,
+    ) -> HealthScore:
+        """
+        Compute a health/activity score for *name*.
+
+        Fetches the package metadata (always), optionally enriches with
+        pypistats download counts and GitHub repository metadata, then
+        returns a :class:`~pypi_librarian.health.HealthScore`.
+
+        Args:
+            name: PyPI package name.
+            include_downloads: If ``True``, fetch pypistats data for the
+                download-trend component.
+            include_github: If ``True``, attempt GitHub enrichment for the
+                GitHub-activity component.
+            github_token: GitHub personal-access token (or set
+                ``GITHUB_TOKEN`` env var).
+
+        Returns:
+            A :class:`~pypi_librarian.health.HealthScore` with a ``score``
+            in [0.0, 1.0] and a per-component breakdown.
+        """
+        project = self.get_project(name)
+
+        upload_times = [
+            f.upload_time
+            for release in project.releases
+            for f in release.files
+            if f.upload_time
+        ]
+
+        stats: DownloadStats | None = None
+        if include_downloads:
+            stats = fetch_download_stats(name)
+
+        github: GitHubInfo | None = None
+        if include_github:
+            github = fetch_github_info_for_project(
+                project.info.project_url,
+                project.info.home_page,
+                token=github_token,
+            )
+
+        return score_project(
+            project.info,
+            releases_upload_times=upload_times,
+            stats=stats,
+            github=github,
+        )
 
     # ------------------------------------------------------------------
     # Search (not available via public API)

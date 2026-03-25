@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Phase 4 — Data Enrichment & Analytics
+
+- Added `pypistats.py`: `fetch_download_stats()` fetches last-day / last-week / last-month download counts from pypistats.org
+- Added `github.py`: `fetch_github_info()` fetches stars, forks, open issues, last push date, and archived status from the GitHub REST API; `extract_github_repo()` extracts GitHub coordinates from package metadata URLs
+- Added `health.py`: `score_project()` computes a 0–1 health score from PyPI metadata, optional pypistats data, and optional GitHub data with per-component breakdown and human-readable notes
+- Added `Repository.get_download_stats()`, `Repository.get_github_info()`, and `Repository.health_score()` convenience methods
+- Added `enrich` CLI command: `pypi-librarian enrich <package> [--with downloads,github,health] [--github-token TOKEN]`
+- Exported `DownloadStats`, `GitHubInfo`, and `HealthScore` from top-level `pypi_librarian` package
+
 ### Phase 2 — Async HTTP, bulk operations, resilience
 
 - Migrated HTTP client from `requests` to `httpx` (supports both sync and async)

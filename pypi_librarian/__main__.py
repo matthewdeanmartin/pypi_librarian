@@ -102,6 +102,23 @@ def _build_parser() -> argparse.ArgumentParser:
     fm_p.add_argument("--from-file", dest="from_file", default=None,
                        help="Text file with package names (default: use /simple/).")
 
+    # enrich
+    enrich_p = sub.add_parser("enrich", help="Show enrichment data for a package.")
+    enrich_p.add_argument("package", help="Package name on PyPI.")
+    enrich_p.add_argument(
+        "--with",
+        dest="sources",
+        default="downloads,github,health",
+        help="Comma-separated enrichment sources: downloads, github, health "
+             "(default: downloads,github,health).",
+    )
+    enrich_p.add_argument(
+        "--github-token",
+        dest="github_token",
+        default=None,
+        help="GitHub personal-access token (overrides GITHUB_TOKEN env var).",
+    )
+
     return parser
 
 
@@ -249,6 +266,83 @@ def _cmd_download_many(args: argparse.Namespace, _repo: Repository) -> int:
     return 0
 
 
+def _cmd_enrich(args: argparse.Namespace, repo: Repository) -> int:
+    sources = {s.strip() for s in args.sources.split(",")}
+    token = args.github_token
+
+    try:
+        project = repo.get_project(args.package)
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+    except Exception as exc:
+        logger.debug("Unexpected error", exc_info=True)
+        print(f"Network error: {exc}", file=sys.stderr)
+        return 2
+
+    print(f"Package: {project.info.name}  {project.info.version}")
+
+    if "downloads" in sources:
+        from pypi_librarian.pypistats import fetch_download_stats
+        stats = fetch_download_stats(args.package)
+        if stats is None:
+            print("\nDownload stats: not available on pypistats")
+        else:
+            print("\nDownload stats (pypistats.org):")
+            print(f"  Last day:   {stats.last_day:,}")
+            print(f"  Last week:  {stats.last_week:,}")
+            print(f"  Last month: {stats.last_month:,}")
+
+    if "github" in sources:
+        from pypi_librarian.github import fetch_github_info_for_project
+        gh = fetch_github_info_for_project(
+            project.info.project_url, project.info.home_page, token=token
+        )
+        if gh is None:
+            print("\nGitHub: no GitHub URL found or not accessible")
+        else:
+            print(f"\nGitHub ({gh.owner}/{gh.repo}):")
+            print(f"  Stars:       {gh.stars:,}")
+            print(f"  Forks:       {gh.forks:,}")
+            print(f"  Open issues: {gh.open_issues:,}")
+            print(f"  Last push:   {gh.last_push or '(unknown)'}")
+            if gh.archived:
+                print("  ** ARCHIVED **")
+
+    if "health" in sources:
+        from pypi_librarian.pypistats import fetch_download_stats
+        from pypi_librarian.github import fetch_github_info_for_project
+        from pypi_librarian.health import score_project
+
+        upload_times = [
+            f.upload_time
+            for release in project.releases
+            for f in release.files
+            if f.upload_time
+        ]
+        dl_stats = fetch_download_stats(args.package) if "downloads" not in sources else None
+        gh_data = (
+            fetch_github_info_for_project(
+                project.info.project_url, project.info.home_page, token=token
+            )
+            if "github" not in sources
+            else None
+        )
+        health = score_project(
+            project.info,
+            releases_upload_times=upload_times,
+            stats=dl_stats,
+            github=gh_data,
+        )
+        print(f"\nHealth score: {health.score:.2f} / 1.00")
+        if health.notes:
+            print("  Issues:")
+            for note in health.notes:
+                print(f"    - {note}")
+
+    return 0
+
+
 def _cmd_fetch_metadata(args: argparse.Namespace, _repo: Repository) -> int:
     names = None
     if args.from_file:
@@ -298,6 +392,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "download": _cmd_download,
         "download-many": _cmd_download_many,
         "fetch-metadata": _cmd_fetch_metadata,
+        "enrich": _cmd_enrich,
     }
     handler = handlers.get(args.command)
     if handler is None:
