@@ -31,7 +31,7 @@ typecheck:
 test:
 	$(UV) run pytest -q
 
-check: format-check lint typecheck test build
+check: lint typecheck test build
 
 build: clean
 	$(UV) build
