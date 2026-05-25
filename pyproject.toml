@@ -99,4 +99,6 @@ warn_unused_configs = true
 pretty = true
 
 [tool.uv]
+
+[tool.uv.pip]
 universal = true
