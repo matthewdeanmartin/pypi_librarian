@@ -97,3 +97,6 @@ namespace_packages = false
 ignore_missing_imports = true
 warn_unused_configs = true
 pretty = true
+
+[tool.uv]
+universal = true
