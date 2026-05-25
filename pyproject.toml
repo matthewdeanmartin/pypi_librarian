@@ -35,6 +35,11 @@ pypi-librarian = "pypi_librarian.__main__:main"
 
 [dependency-groups]
 dev = [
+    "jiggle-version>=2.1.0",
+    "troml-dev-status>=0.6.0",
+    "dont-be-lazy>=0.1.2",
+    "pydoc-fork>=3.0.0",
+
   "bandit",
   "black",
   "build",
