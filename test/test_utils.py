@@ -8,6 +8,7 @@ from __future__ import annotations
 import asyncio
 import os
 import threading
+
 import pytest
 
 from pypi_librarian.utils import locate_file, run_async
@@ -17,7 +18,7 @@ class TestLocateFile:
     def test_locate_file_success(self, tmp_path):
         f = tmp_path / "test.txt"
         f.write_text("hello")
-        
+
         # Test locating a file that exists
         result = locate_file("test.txt", str(tmp_path / "other.py"))
         assert result == str(f)

@@ -15,7 +15,6 @@ import pytest
 from pypi_librarian.class_repo import Repository
 from pypi_librarian.models import NewPackage, NewRelease, Package, Project, User
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -71,7 +70,9 @@ class TestGetProject:
 class TestGetPackage:
     def test_returns_package(self, sample_project_json):
         repo = Repository()
-        with patch.object(repo._json, "package_version_json", return_value=sample_project_json):
+        with patch.object(
+            repo._json, "package_version_json", return_value=sample_project_json
+        ):
             pkg = repo.get_package("test-pkg", "1.0.0")
         assert isinstance(pkg, Package)
         assert pkg.name == "test-pkg"
@@ -95,7 +96,9 @@ class TestGetPackage:
 class TestGetUser:
     def test_returns_user(self):
         repo = Repository()
-        with patch.object(repo._html, "packages_for_user", return_value=["alpha", "beta"]):
+        with patch.object(
+            repo._html, "packages_for_user", return_value=["alpha", "beta"]
+        ):
             user = repo.get_user("testuser")
         assert isinstance(user, User)
         assert user.name == "testuser"
@@ -110,7 +113,9 @@ class TestGetUser:
 class TestProjectNamesByUser:
     def test_returns_list_of_strings(self):
         repo = Repository()
-        with patch.object(repo._html, "packages_for_user", return_value=["alpha", "beta"]):
+        with patch.object(
+            repo._html, "packages_for_user", return_value=["alpha", "beta"]
+        ):
             names = repo.project_names_by_user("testuser")
         assert names == ["alpha", "beta"]
 

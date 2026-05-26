@@ -27,7 +27,7 @@ from __future__ import annotations
 import asyncio
 from typing import AsyncIterator, Iterator
 
-from pypi_librarian.download import DownloadPolicy, DownloadResult, Downloader
+from pypi_librarian.download import Downloader, DownloadPolicy, DownloadResult
 from pypi_librarian.fetch_metadata import FetchMetadata
 from pypi_librarian.github import GitHubInfo, fetch_github_info_for_project
 from pypi_librarian.health import HealthScore, score_project
@@ -236,9 +236,7 @@ class Repository:
             return _package_from_json(data)
 
         try:
-            results = await asyncio.gather(
-                *[_fetch_one(n, v) for n, v in items]
-            )
+            results = await asyncio.gather(*[_fetch_one(n, v) for n, v in items])
         finally:
             await async_json.close()
         return [p for p in results if p is not None]
@@ -328,9 +326,7 @@ class Repository:
 
         Returns the number of packages successfully fetched.
         """
-        fm = FetchMetadata(
-            dest_dir=dest_dir, limit=limit, base_url=self.base_url
-        )
+        fm = FetchMetadata(dest_dir=dest_dir, limit=limit, base_url=self.base_url)
         return fm.run(names)
 
     # ------------------------------------------------------------------

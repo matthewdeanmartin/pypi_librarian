@@ -17,7 +17,6 @@ from pypi_librarian.json_endpoints import AsyncJsonEndpoints
 from pypi_librarian.models import Package, Project
 from pypi_librarian.utils import run_async
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -124,9 +123,7 @@ class TestRepositoryBulkAsync:
 
         with patch("pypi_librarian.class_repo.AsyncJsonEndpoints") as MockAJE:
             mock_aje = MockAJE.return_value
-            mock_aje.package_json = AsyncMock(
-                side_effect=[sample_project_json, None]
-            )
+            mock_aje.package_json = AsyncMock(side_effect=[sample_project_json, None])
             mock_aje.close = AsyncMock()
 
             results = await repo.get_many_projects_async(["test-pkg", "no-such"])

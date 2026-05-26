@@ -9,12 +9,11 @@ from __future__ import annotations
 
 import json
 
-import pytest
 import httpx
+import pytest
 from pytest_httpx import HTTPXMock
 
 from pypi_librarian.pypistats import DownloadStats, fetch_download_stats
-
 
 _RECENT_RESPONSE = {
     "data": [

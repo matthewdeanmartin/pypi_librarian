@@ -124,8 +124,8 @@ class Project:
     """All known data about a project across every version."""
 
     name: str
-    info: ProjectInfo          # metadata from the latest version
-    releases: list[Release]    # all versions in PyPI order
+    info: ProjectInfo  # metadata from the latest version
+    releases: list[Release]  # all versions in PyPI order
     latest_files: list[ReleaseFile]  # files for the latest version (``urls`` key)
     raw: dict[str, Any] = field(default_factory=dict)
 
@@ -135,7 +135,7 @@ class User:
     """A PyPI user and the list of packages they maintain."""
 
     name: str
-    packages: list[str]        # package names (not Package objects — avoids N HTTP calls)
+    packages: list[str]  # package names (not Package objects — avoids N HTTP calls)
     raw: dict[str, Any] = field(default_factory=dict)
 
 
@@ -207,8 +207,7 @@ def _project_from_json(data: dict[str, Any]) -> Project:
     info = _project_info_from_dict(data["info"])
     releases_raw: dict[str, list[dict[str, Any]]] = data.get("releases") or {}
     releases = [
-        _release_from_version_entry(ver, files)
-        for ver, files in releases_raw.items()
+        _release_from_version_entry(ver, files) for ver, files in releases_raw.items()
     ]
     latest_files = [_release_file_from_dict(f) for f in (data.get("urls") or [])]
     return Project(

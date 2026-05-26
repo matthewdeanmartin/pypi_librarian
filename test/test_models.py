@@ -22,7 +22,6 @@ from pypi_librarian.models import (
     _user_from_html,
 )
 
-
 # ---------------------------------------------------------------------------
 # ReleaseFile
 # ---------------------------------------------------------------------------
@@ -96,11 +95,13 @@ def test_project_info_from_dict_minimal():
 
 def test_project_info_project_url_fallback():
     """project_url falls back to home_page when project_urls is absent."""
-    info = _project_info_from_dict({
-        "name": "x",
-        "version": "1",
-        "home_page": "https://fallback.example.com",
-    })
+    info = _project_info_from_dict(
+        {
+            "name": "x",
+            "version": "1",
+            "home_page": "https://fallback.example.com",
+        }
+    )
     assert info.project_url == "https://fallback.example.com"
 
 

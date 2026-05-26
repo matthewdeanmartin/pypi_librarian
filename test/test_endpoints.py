@@ -19,7 +19,6 @@ from pypi_librarian.json_endpoints import JsonEndpoints
 from pypi_librarian.models import NewPackage, NewRelease
 from pypi_librarian.rss_endpoints import RssEndpoints
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -42,26 +41,38 @@ def _mock_response(body: str, status: int = 200) -> httpx.Response:
 class TestJsonEndpoints:
     def test_package_json_returns_dict(self, sample_project_json):
         je = JsonEndpoints()
-        with patch.object(je, "_session_get", return_value=_mock_response(json.dumps(sample_project_json))):
+        with patch.object(
+            je,
+            "_session_get",
+            return_value=_mock_response(json.dumps(sample_project_json)),
+        ):
             result = je.package_json("test-pkg")
         assert isinstance(result, dict)
         assert result["info"]["name"] == "test-pkg"
 
     def test_package_json_404_returns_none(self):
         je = JsonEndpoints()
-        with patch.object(je, "_session_get", return_value=_mock_response("", status=404)):
+        with patch.object(
+            je, "_session_get", return_value=_mock_response("", status=404)
+        ):
             assert je.package_json("no-such-package") is None
 
     def test_package_version_json_returns_dict(self, sample_project_json):
         je = JsonEndpoints()
-        with patch.object(je, "_session_get", return_value=_mock_response(json.dumps(sample_project_json))):
+        with patch.object(
+            je,
+            "_session_get",
+            return_value=_mock_response(json.dumps(sample_project_json)),
+        ):
             result = je.package_version_json("test-pkg", "1.0.0")
         assert isinstance(result, dict)
 
     def test_package_version_json_404_returns_none(self):
         """Regression test: old code crashed on 404 by calling json.loads on empty string."""
         je = JsonEndpoints()
-        with patch.object(je, "_session_get", return_value=_mock_response("", status=404)):
+        with patch.object(
+            je, "_session_get", return_value=_mock_response("", status=404)
+        ):
             assert je.package_version_json("test-pkg", "99.99.99") is None
 
     def test_package_json_as_text_returns_string(self, sample_project_json):
@@ -74,7 +85,9 @@ class TestJsonEndpoints:
 
     def test_package_json_as_text_404_returns_none(self):
         je = JsonEndpoints()
-        with patch.object(je, "_session_get", return_value=_mock_response("", status=404)):
+        with patch.object(
+            je, "_session_get", return_value=_mock_response("", status=404)
+        ):
             assert je.package_json_as_text("no-such-package") is None
 
 
@@ -85,7 +98,9 @@ class TestJsonEndpoints:
 
 class TestHtmlEndpoints:
     def test_all_returns_strings(self):
-        minimal_simple_html = b"<html><body><a href='/simple/requests/'>requests</a></body></html>"
+        minimal_simple_html = (
+            b"<html><body><a href='/simple/requests/'>requests</a></body></html>"
+        )
         resp = httpx.Response(
             status_code=200,
             content=minimal_simple_html,

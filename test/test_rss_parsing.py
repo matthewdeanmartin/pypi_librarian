@@ -33,7 +33,9 @@ def test_parse_new_packages_item_count(rss_client, sample_rss_packages_xml):
     assert len(result) == 2
 
 
-def test_parse_new_packages_returns_new_package_instances(rss_client, sample_rss_packages_xml):
+def test_parse_new_packages_returns_new_package_instances(
+    rss_client, sample_rss_packages_xml
+):
     result = rss_client._parse_new_packages(sample_rss_packages_xml)
     assert all(isinstance(item, NewPackage) for item in result)
 
@@ -63,7 +65,9 @@ def test_parse_new_releases_returns_list(rss_client, sample_rss_updates_xml):
     assert isinstance(result, list)
 
 
-def test_parse_new_releases_returns_new_release_instances(rss_client, sample_rss_updates_xml):
+def test_parse_new_releases_returns_new_release_instances(
+    rss_client, sample_rss_updates_xml
+):
     result = rss_client._parse_new_releases(sample_rss_updates_xml)
     assert all(isinstance(item, NewRelease) for item in result)
 

@@ -100,7 +100,9 @@ class AsyncJsonEndpoints:
         response.raise_for_status()
         return response.text
 
-    async def package_version_json(self, package: str, version: str) -> dict[str, Any] | None:
+    async def package_version_json(
+        self, package: str, version: str
+    ) -> dict[str, Any] | None:
         """Return parsed JSON for a specific version, or None if not found."""
         response = await self._get(package, version, "json")
         if response.status_code == 404:

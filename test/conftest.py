@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Fixtures — minimal valid PyPI API payloads for unit tests
 # ---------------------------------------------------------------------------

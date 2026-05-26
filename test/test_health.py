@@ -7,14 +7,14 @@ No network access — all inputs are constructed inline.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from pypi_librarian.health import HealthScore, score_project, _within_days, _parse_date
+from pypi_librarian.github import GitHubInfo
+from pypi_librarian.health import HealthScore, _parse_date, _within_days, score_project
 from pypi_librarian.models import ProjectInfo
 from pypi_librarian.pypistats import DownloadStats
-from pypi_librarian.github import GitHubInfo
 
 
 def _make_info(**overrides) -> ProjectInfo:
@@ -44,7 +44,9 @@ def _make_info(**overrides) -> ProjectInfo:
 
 
 def _recent_ts() -> str:
-    return (datetime.now(timezone.utc) - timedelta(days=30)).strftime("%Y-%m-%dT%H:%M:%S")
+    return (datetime.now(timezone.utc) - timedelta(days=30)).strftime(
+        "%Y-%m-%dT%H:%M:%S"
+    )
 
 
 def _old_ts() -> str:
@@ -58,13 +60,23 @@ def _old_ts() -> str:
 
 def test_perfect_score() -> None:
     info = _make_info()
-    stats = DownloadStats(package="test-pkg", last_day=1, last_week=7, last_month=100, raw={})
-    github = GitHubInfo(
-        owner="alice", repo="test-pkg", stars=500, forks=50,
-        open_issues=10, last_push=_recent_ts(),
-        description="A great package", archived=False, raw={},
+    stats = DownloadStats(
+        package="test-pkg", last_day=1, last_week=7, last_month=100, raw={}
     )
-    result = score_project(info, releases_upload_times=[_recent_ts()], stats=stats, github=github)
+    github = GitHubInfo(
+        owner="alice",
+        repo="test-pkg",
+        stars=500,
+        forks=50,
+        open_issues=10,
+        last_push=_recent_ts(),
+        description="A great package",
+        archived=False,
+        raw={},
+    )
+    result = score_project(
+        info, releases_upload_times=[_recent_ts()], stats=stats, github=github
+    )
     assert isinstance(result, HealthScore)
     assert result.score == 1.0
     assert result.notes == []
@@ -133,7 +145,9 @@ def test_score_stale_releases() -> None:
 
 def test_score_zero_downloads() -> None:
     info = _make_info()
-    stats = DownloadStats(package="test-pkg", last_day=0, last_week=0, last_month=0, raw={})
+    stats = DownloadStats(
+        package="test-pkg", last_day=0, last_week=0, last_month=0, raw={}
+    )
     result = score_project(info, releases_upload_times=[_recent_ts()], stats=stats)
     assert result.score < 1.0
     assert any("download" in n.lower() for n in result.notes)
@@ -142,9 +156,15 @@ def test_score_zero_downloads() -> None:
 def test_score_archived_github() -> None:
     info = _make_info()
     github = GitHubInfo(
-        owner="alice", repo="test-pkg", stars=10, forks=1,
-        open_issues=0, last_push=_old_ts(),
-        description="old", archived=True, raw={},
+        owner="alice",
+        repo="test-pkg",
+        stars=10,
+        forks=1,
+        open_issues=0,
+        last_push=_old_ts(),
+        description="old",
+        archived=True,
+        raw={},
     )
     result = score_project(info, releases_upload_times=[_recent_ts()], github=github)
     assert result.score < 1.0
@@ -156,14 +176,14 @@ def test_score_archived_github() -> None:
 
 
 def test_parse_date_valid() -> None:
-    from pypi_librarian.health import _parse_date
+
     dt = _parse_date("2024-03-15T10:00:00Z")
     assert dt is not None
     assert dt.year == 2024
 
 
 def test_parse_date_invalid() -> None:
-    from pypi_librarian.health import _parse_date
+
     assert _parse_date("not-a-date") is None
     assert _parse_date("") is None
 

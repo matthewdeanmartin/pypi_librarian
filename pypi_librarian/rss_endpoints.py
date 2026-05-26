@@ -15,8 +15,12 @@ import xml.etree.ElementTree as ET
 
 import httpx
 
-from pypi_librarian.models import NewPackage, NewRelease
-from pypi_librarian.models import _new_package_from_rss_item, _new_release_from_rss_item
+from pypi_librarian.models import (
+    NewPackage,
+    NewRelease,
+    _new_package_from_rss_item,
+    _new_release_from_rss_item,
+)
 
 __all__ = ["RssEndpoints"]
 
@@ -65,15 +69,13 @@ class RssEndpoints:
     def _parse_new_packages(self, xml_text: str) -> list[NewPackage]:
         root = ET.fromstring(xml_text)
         return [
-            _new_package_from_rss_item(item)
-            for item in root.findall("channel/item")
+            _new_package_from_rss_item(item) for item in root.findall("channel/item")
         ]
 
     def _parse_new_releases(self, xml_text: str) -> list[NewRelease]:
         root = ET.fromstring(xml_text)
         return [
-            _new_release_from_rss_item(item)
-            for item in root.findall("channel/item")
+            _new_release_from_rss_item(item) for item in root.findall("channel/item")
         ]
 
     def close(self) -> None:

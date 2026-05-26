@@ -14,7 +14,7 @@ classes.
 
 from __future__ import annotations
 
-from typing import AsyncIterator, Iterator
+from typing import AsyncIterator, Iterator, cast
 
 import httpx
 from lxml import html
@@ -59,7 +59,7 @@ class HtmlEndpoints:
 
         client = xmlrpc.client.ServerProxy("https://pypi.org/pypi")
         try:
-            pairs = client.user_packages(name)
+            pairs = cast(list[tuple[str, str]], client.user_packages(name))
         except Exception:
             return []
         seen: set[str] = set()

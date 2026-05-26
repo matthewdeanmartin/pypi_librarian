@@ -29,7 +29,6 @@ import asyncio
 import hashlib
 import json
 import logging
-import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -37,7 +36,7 @@ from typing import Any
 import httpx
 
 from pypi_librarian.json_endpoints import AsyncJsonEndpoints
-from pypi_librarian.rate_limit import AsyncTokenBucket, RateLimiter
+from pypi_librarian.rate_limit import RateLimiter
 from pypi_librarian.utils import run_async
 
 __all__ = ["DownloadPolicy", "DownloadResult", "Downloader"]
@@ -178,7 +177,11 @@ class Downloader:
         self.dest_dir.mkdir(parents=True, exist_ok=True)
 
         api = AsyncJsonEndpoints(repo_url=f"{self.base_url}/pypi")
-        limiter = RateLimiter(rate=self.policy.rate_limit) if self.policy.rate_limit > 0 else None
+        limiter = (
+            RateLimiter(rate=self.policy.rate_limit)
+            if self.policy.rate_limit > 0
+            else None
+        )
 
         try:
             if version:
@@ -197,9 +200,7 @@ class Downloader:
             actual_version = data["info"]["version"]
             files_data = data.get("urls") or []
 
-            return await self._download_files(
-                name, actual_version, files_data, limiter
-            )
+            return await self._download_files(name, actual_version, files_data, limiter)
         finally:
             await api.close()
 
@@ -348,7 +349,10 @@ class Downloader:
             packagetype = file_info.get("packagetype", "")
 
             # Filter by policy
-            if "all" not in self.policy.file_types and packagetype not in self.policy.file_types:
+            if (
+                "all" not in self.policy.file_types
+                and packagetype not in self.policy.file_types
+            ):
                 result.skipped.append(filename)
                 continue
 
@@ -378,9 +382,7 @@ class Downloader:
 
         return result
 
-    async def _download_file(
-        self, url: str, dest: Path, expected_sha256: str
-    ) -> None:
+    async def _download_file(self, url: str, dest: Path, expected_sha256: str) -> None:
         """Download a single file and verify its SHA256 checksum."""
         async with httpx.AsyncClient(timeout=120.0) as client:
             async with client.stream("GET", url) as response:

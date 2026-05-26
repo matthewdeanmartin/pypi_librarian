@@ -21,7 +21,7 @@ from typing import Sequence
 
 from pypi_librarian._version import __version__
 from pypi_librarian.class_repo import Repository
-from pypi_librarian.download import DownloadPolicy, Downloader
+from pypi_librarian.download import Downloader, DownloadPolicy
 from pypi_librarian.fetch_metadata import FetchMetadata
 
 __all__ = ["main"]
@@ -68,39 +68,77 @@ def _build_parser() -> argparse.ArgumentParser:
     # download
     dl_p = sub.add_parser("download", help="Download distribution files for a package.")
     dl_p.add_argument("package", help="Package name on PyPI.")
-    dl_p.add_argument("--version", "-V", dest="pkg_version", default=None,
-                       help="Specific version to download (default: latest).")
+    dl_p.add_argument(
+        "--version",
+        "-V",
+        dest="pkg_version",
+        default=None,
+        help="Specific version to download (default: latest).",
+    )
     dl_p.add_argument("--dest", default=".", help="Destination directory (default: .).")
-    dl_p.add_argument("--types", default="bdist_wheel,sdist",
-                       help="Comma-separated file types (default: bdist_wheel,sdist).")
+    dl_p.add_argument(
+        "--types",
+        default="bdist_wheel,sdist",
+        help="Comma-separated file types (default: bdist_wheel,sdist).",
+    )
 
     # download-many
     dm_p = sub.add_parser("download-many", help="Download files for multiple packages.")
-    dm_p.add_argument("--from-file", required=True, dest="from_file",
-                       help="Text file with one package name per line.")
+    dm_p.add_argument(
+        "--from-file",
+        required=True,
+        dest="from_file",
+        help="Text file with one package name per line.",
+    )
     dm_p.add_argument("--dest", default=".", help="Destination directory (default: .).")
-    dm_p.add_argument("--workers", type=int, default=10,
-                       help="Max concurrent downloads (default: 10).")
-    dm_p.add_argument("--rate", type=float, default=10.0,
-                       help="Max requests per second (default: 10).")
-    dm_p.add_argument("--resume", action="store_true",
-                       help="Resume from checkpoint, skip already-downloaded packages.")
-    dm_p.add_argument("--types", default="bdist_wheel,sdist",
-                       help="Comma-separated file types (default: bdist_wheel,sdist).")
+    dm_p.add_argument(
+        "--workers",
+        type=int,
+        default=10,
+        help="Max concurrent downloads (default: 10).",
+    )
+    dm_p.add_argument(
+        "--rate",
+        type=float,
+        default=10.0,
+        help="Max requests per second (default: 10).",
+    )
+    dm_p.add_argument(
+        "--resume",
+        action="store_true",
+        help="Resume from checkpoint, skip already-downloaded packages.",
+    )
+    dm_p.add_argument(
+        "--types",
+        default="bdist_wheel,sdist",
+        help="Comma-separated file types (default: bdist_wheel,sdist).",
+    )
 
     # fetch-metadata
-    fm_p = sub.add_parser("fetch-metadata",
-                           help="Fetch JSON metadata for packages into a directory.")
-    fm_p.add_argument("--dest", default="metadata",
-                       help="Destination directory (default: metadata).")
-    fm_p.add_argument("--limit", type=int, default=0,
-                       help="Max packages to fetch (default: 0 = all).")
-    fm_p.add_argument("--workers", type=int, default=10,
-                       help="Max concurrent requests (default: 10).")
-    fm_p.add_argument("--rate", type=float, default=10.0,
-                       help="Max requests per second (default: 10).")
-    fm_p.add_argument("--from-file", dest="from_file", default=None,
-                       help="Text file with package names (default: use /simple/).")
+    fm_p = sub.add_parser(
+        "fetch-metadata", help="Fetch JSON metadata for packages into a directory."
+    )
+    fm_p.add_argument(
+        "--dest", default="metadata", help="Destination directory (default: metadata)."
+    )
+    fm_p.add_argument(
+        "--limit", type=int, default=0, help="Max packages to fetch (default: 0 = all)."
+    )
+    fm_p.add_argument(
+        "--workers", type=int, default=10, help="Max concurrent requests (default: 10)."
+    )
+    fm_p.add_argument(
+        "--rate",
+        type=float,
+        default=10.0,
+        help="Max requests per second (default: 10).",
+    )
+    fm_p.add_argument(
+        "--from-file",
+        dest="from_file",
+        default=None,
+        help="Text file with package names (default: use /simple/).",
+    )
 
     # enrich
     enrich_p = sub.add_parser("enrich", help="Show enrichment data for a package.")
@@ -110,7 +148,7 @@ def _build_parser() -> argparse.ArgumentParser:
         dest="sources",
         default="downloads,github,health",
         help="Comma-separated enrichment sources: downloads, github, health "
-             "(default: downloads,github,health).",
+        "(default: downloads,github,health).",
     )
     enrich_p.add_argument(
         "--github-token",
@@ -213,16 +251,20 @@ def _cmd_download(args: argparse.Namespace, _repo: Repository) -> int:
     for s in result.skipped:
         print(f"  Skipped: {s}")
 
-    print(f"\n{result.name} {result.version}: "
-          f"{len(result.files)} downloaded, {len(result.skipped)} skipped, "
-          f"{len(result.errors)} errors")
+    print(
+        f"\n{result.name} {result.version}: "
+        f"{len(result.files)} downloaded, {len(result.skipped)} skipped, "
+        f"{len(result.errors)} errors"
+    )
     return 1 if result.errors and not result.files else 0
 
 
 def _cmd_download_many(args: argparse.Namespace, _repo: Repository) -> int:
     try:
         with open(args.from_file, encoding="utf-8") as f:
-            names = [line.strip() for line in f if line.strip() and not line.startswith("#")]
+            names = [
+                line.strip() for line in f if line.strip() and not line.startswith("#")
+            ]
     except FileNotFoundError:
         print(f"Error: file not found: {args.from_file}", file=sys.stderr)
         return 1
@@ -261,8 +303,10 @@ def _cmd_download_many(args: argparse.Namespace, _repo: Repository) -> int:
             for fp in r.files:
                 print(f"  {r.name}: {fp}")
 
-    print(f"\n{len(results)} packages, {total_files} files downloaded, "
-          f"{total_errors} errors")
+    print(
+        f"\n{len(results)} packages, {total_files} files downloaded, "
+        f"{total_errors} errors"
+    )
     return 0
 
 
@@ -284,6 +328,7 @@ def _cmd_enrich(args: argparse.Namespace, repo: Repository) -> int:
 
     if "downloads" in sources:
         from pypi_librarian.pypistats import fetch_download_stats
+
         stats = fetch_download_stats(args.package)
         if stats is None:
             print("\nDownload stats: not available on pypistats")
@@ -295,6 +340,7 @@ def _cmd_enrich(args: argparse.Namespace, repo: Repository) -> int:
 
     if "github" in sources:
         from pypi_librarian.github import fetch_github_info_for_project
+
         gh = fetch_github_info_for_project(
             project.info.project_url, project.info.home_page, token=token
         )
@@ -310,9 +356,9 @@ def _cmd_enrich(args: argparse.Namespace, repo: Repository) -> int:
                 print("  ** ARCHIVED **")
 
     if "health" in sources:
-        from pypi_librarian.pypistats import fetch_download_stats
         from pypi_librarian.github import fetch_github_info_for_project
         from pypi_librarian.health import score_project
+        from pypi_librarian.pypistats import fetch_download_stats
 
         upload_times = [
             f.upload_time
@@ -320,7 +366,9 @@ def _cmd_enrich(args: argparse.Namespace, repo: Repository) -> int:
             for f in release.files
             if f.upload_time
         ]
-        dl_stats = fetch_download_stats(args.package) if "downloads" not in sources else None
+        dl_stats = (
+            fetch_download_stats(args.package) if "downloads" not in sources else None
+        )
         gh_data = (
             fetch_github_info_for_project(
                 project.info.project_url, project.info.home_page, token=token
@@ -348,7 +396,11 @@ def _cmd_fetch_metadata(args: argparse.Namespace, _repo: Repository) -> int:
     if args.from_file:
         try:
             with open(args.from_file, encoding="utf-8") as f:
-                names = [line.strip() for line in f if line.strip() and not line.startswith("#")]
+                names = [
+                    line.strip()
+                    for line in f
+                    if line.strip() and not line.startswith("#")
+                ]
         except FileNotFoundError:
             print(f"Error: file not found: {args.from_file}", file=sys.stderr)
             return 1

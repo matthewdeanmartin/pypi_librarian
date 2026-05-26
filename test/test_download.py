@@ -14,12 +14,11 @@ import httpx
 import pytest
 
 from pypi_librarian.download import (
+    Downloader,
     DownloadPolicy,
     DownloadResult,
-    Downloader,
     _Checkpoint,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -128,7 +127,7 @@ class TestCheckpoint:
         result = DownloadResult(name="pkg", version="1.0", files=["a.whl"])
         cp.mark_done(result)
         cp.mark_done(result)  # duplicate
-        lines = [l for l in path.read_text().strip().split("\n") if l]
+        lines = [line for line in path.read_text().strip().split("\n") if line]
         assert len(lines) == 1
 
 
@@ -153,7 +152,9 @@ class TestDownloaderDownloadOne:
 
     @pytest.mark.asyncio
     async def test_download_one_success(self, tmp_path):
-        dl = Downloader(dest_dir=tmp_path, policy=DownloadPolicy(verify_checksums=False))
+        dl = Downloader(
+            dest_dir=tmp_path, policy=DownloadPolicy(verify_checksums=False)
+        )
         pkg_data = _fake_package_json()
 
         with patch("pypi_librarian.download.AsyncJsonEndpoints") as MockAPI:
@@ -188,7 +189,9 @@ class TestDownloaderDownloadOne:
 
     @pytest.mark.asyncio
     async def test_download_one_specific_version(self, tmp_path):
-        dl = Downloader(dest_dir=tmp_path, policy=DownloadPolicy(verify_checksums=False))
+        dl = Downloader(
+            dest_dir=tmp_path, policy=DownloadPolicy(verify_checksums=False)
+        )
         pkg_data = _fake_package_json(version="2.0.0")
 
         with patch("pypi_librarian.download.AsyncJsonEndpoints") as MockAPI:
@@ -210,7 +213,9 @@ class TestDownloaderDownloadOne:
 class TestDownloaderDownloadMany:
     @pytest.mark.asyncio
     async def test_download_many_returns_results_for_all(self, tmp_path):
-        dl = Downloader(dest_dir=tmp_path, policy=DownloadPolicy(verify_checksums=False))
+        dl = Downloader(
+            dest_dir=tmp_path, policy=DownloadPolicy(verify_checksums=False)
+        )
 
         with patch.object(dl, "download_one", new_callable=AsyncMock) as mock_one:
             mock_one.return_value = DownloadResult(
@@ -246,16 +251,25 @@ class TestDownloaderResume:
         # Pre-populate checkpoint
         cp_path = tmp_path / ".pypi_checkpoint.ndjson"
         cp_path.write_text(
-            json.dumps({"name": "done-pkg", "version": "1.0", "files": ["a.whl"], "errors": []}) + "\n"
+            json.dumps(
+                {"name": "done-pkg", "version": "1.0", "files": ["a.whl"], "errors": []}
+            )
+            + "\n"
         )
 
-        dl = Downloader(dest_dir=tmp_path, policy=DownloadPolicy(verify_checksums=False))
+        dl = Downloader(
+            dest_dir=tmp_path, policy=DownloadPolicy(verify_checksums=False)
+        )
 
         with patch("pypi_librarian.download.AsyncJsonEndpoints") as MockAPI:
             mock_api = MockAPI.return_value
             # For "done-pkg" version resolution
             mock_api.package_json = AsyncMock(
-                side_effect=lambda n: _fake_package_json(n, "1.0") if n == "done-pkg" else _fake_package_json(n, "2.0")
+                side_effect=lambda n: (
+                    _fake_package_json(n, "1.0")
+                    if n == "done-pkg"
+                    else _fake_package_json(n, "2.0")
+                )
             )
             mock_api.close = AsyncMock()
 
@@ -281,7 +295,9 @@ class TestDownloaderResume:
 
 class TestDownloaderSync:
     def test_download_one_sync(self, tmp_path):
-        dl = Downloader(dest_dir=tmp_path, policy=DownloadPolicy(verify_checksums=False))
+        dl = Downloader(
+            dest_dir=tmp_path, policy=DownloadPolicy(verify_checksums=False)
+        )
 
         with patch("pypi_librarian.download.AsyncJsonEndpoints") as MockAPI:
             mock_api = MockAPI.return_value
@@ -316,8 +332,9 @@ class TestChecksumVerification:
             actual_hash = hashlib.sha256(b"actual content").hexdigest()
             if expected_sha256 and actual_hash != expected_sha256:
                 from pypi_librarian.download import _ChecksumMismatch
+
                 dest.unlink()
-                raise _ChecksumMismatch(f"SHA256 mismatch")
+                raise _ChecksumMismatch("SHA256 mismatch")
 
         with patch("pypi_librarian.download.AsyncJsonEndpoints") as MockAPI:
             mock_api = MockAPI.return_value

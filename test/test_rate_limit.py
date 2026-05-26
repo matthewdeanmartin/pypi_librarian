@@ -18,7 +18,6 @@ from pypi_librarian.rate_limit import (
     _is_transient,
 )
 
-
 # ---------------------------------------------------------------------------
 # SyncTokenBucket
 # ---------------------------------------------------------------------------
@@ -121,9 +120,7 @@ class TestIsTransient:
             status_code=429,
             request=httpx.Request("GET", "https://test/"),
         )
-        exc = httpx.HTTPStatusError(
-            "rate limited", request=resp.request, response=resp
-        )
+        exc = httpx.HTTPStatusError("rate limited", request=resp.request, response=resp)
         assert _is_transient(exc) is True
 
     def test_500_is_transient(self):
@@ -131,9 +128,7 @@ class TestIsTransient:
             status_code=500,
             request=httpx.Request("GET", "https://test/"),
         )
-        exc = httpx.HTTPStatusError(
-            "server error", request=resp.request, response=resp
-        )
+        exc = httpx.HTTPStatusError("server error", request=resp.request, response=resp)
         assert _is_transient(exc) is True
 
     def test_404_is_not_transient(self):
@@ -141,9 +136,7 @@ class TestIsTransient:
             status_code=404,
             request=httpx.Request("GET", "https://test/"),
         )
-        exc = httpx.HTTPStatusError(
-            "not found", request=resp.request, response=resp
-        )
+        exc = httpx.HTTPStatusError("not found", request=resp.request, response=resp)
         assert _is_transient(exc) is False
 
     def test_timeout_is_transient(self):

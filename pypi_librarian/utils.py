@@ -7,14 +7,15 @@ from __future__ import annotations
 
 import asyncio
 import os
-from typing import TypeVar
+from collections.abc import Coroutine
+from typing import Any, TypeVar
 
 __all__ = ["locate_file", "run_async"]
 
 T = TypeVar("T")
 
 
-def run_async(coro: asyncio.coroutines, /) -> T:  # type: ignore[type-arg]
+def run_async(coro: Coroutine[Any, Any, T], /) -> T:
     """
     Run an async coroutine from synchronous code and return the result.
 
@@ -41,7 +42,7 @@ def run_async(coro: asyncio.coroutines, /) -> T:  # type: ignore[type-arg]
     import concurrent.futures
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
-        future = pool.submit(asyncio.run, coro)
+        future: concurrent.futures.Future[T] = pool.submit(asyncio.run, coro)
         return future.result()
 
 

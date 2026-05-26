@@ -10,10 +10,10 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from pypi_librarian.__main__ import main
-from pypi_librarian.models import Project, Package, NewPackage, ProjectInfo
-from pypi_librarian.pypistats import DownloadStats
 from pypi_librarian.github import GitHubInfo
 from pypi_librarian.health import HealthScore
+from pypi_librarian.models import NewPackage, Package, Project, ProjectInfo
+from pypi_librarian.pypistats import DownloadStats
 
 
 class TestCLIExtended:
@@ -41,16 +41,16 @@ class TestCLIExtended:
                 requires_dist=("requests>=2.0",),
                 yanked=False,
                 yanked_reason=None,
-                raw={}
+                raw={},
             ),
             releases=[],
             latest_files=[],
-            raw={}
+            raw={},
         )
         mock_repo.get_project.return_value = project
 
         exit_code = main(["info", "test-pkg"])
-        
+
         assert exit_code == 0
         captured = capsys.readouterr()
         assert "Name:           test-pkg" in captured.out
@@ -71,7 +71,7 @@ class TestCLIExtended:
                 MagicMock(version="0.9.0", files=[1]),
             ],
             latest_files=[],
-            raw={}
+            raw={},
         )
         mock_repo.get_project.return_value = project
 
@@ -86,8 +86,18 @@ class TestCLIExtended:
     def test_latest_command(self, MockRepo, capsys):
         mock_repo = MockRepo.return_value
         mock_repo.newest_packages.return_value = [
-            NewPackage(title="pkg1 1.0.0", link="https://pypi.org/p/pkg1", description="desc1", published=""),
-            NewPackage(title="pkg2 2.0.0", link="https://pypi.org/p/pkg2", description="desc2", published=""),
+            NewPackage(
+                title="pkg1 1.0.0",
+                link="https://pypi.org/p/pkg1",
+                description="desc1",
+                published="",
+            ),
+            NewPackage(
+                title="pkg2 2.0.0",
+                link="https://pypi.org/p/pkg2",
+                description="desc2",
+                published="",
+            ),
         ]
 
         exit_code = main(["latest"])
@@ -105,28 +115,49 @@ class TestCLIExtended:
     def test_enrich_command(self, MockScore, MockGithub, MockStats, MockRepo, capsys):
         mock_repo = MockRepo.return_value
         info = ProjectInfo(
-            name="test-pkg", version="1.0.0", summary="summary", author="author",
-            author_email="email", maintainer=None, maintainer_email=None,
-            license="MIT", home_page="url", project_url="url", requires_python=">=3.8",
-            classifiers=(), keywords=None, description=None, description_content_type=None,
-            requires_dist=(), yanked=False, yanked_reason=None, raw={}
+            name="test-pkg",
+            version="1.0.0",
+            summary="summary",
+            author="author",
+            author_email="email",
+            maintainer=None,
+            maintainer_email=None,
+            license="MIT",
+            home_page="url",
+            project_url="url",
+            requires_python=">=3.8",
+            classifiers=(),
+            keywords=None,
+            description=None,
+            description_content_type=None,
+            requires_dist=(),
+            yanked=False,
+            yanked_reason=None,
+            raw={},
         )
         project = Project(
-            name="test-pkg",
-            info=info,
-            releases=[],
-            latest_files=[],
-            raw={}
+            name="test-pkg", info=info, releases=[], latest_files=[], raw={}
         )
 
         mock_repo.get_project.return_value = project
-        
-        MockStats.return_value = DownloadStats(package="test-pkg", last_day=10, last_week=70, last_month=300, raw={})
-        MockGithub.return_value = GitHubInfo(
-            owner="owner", repo="repo", stars=100, forks=20, open_issues=5,
-            last_push="2024-01-01", description="desc", archived=False, raw={}
+
+        MockStats.return_value = DownloadStats(
+            package="test-pkg", last_day=10, last_week=70, last_month=300, raw={}
         )
-        MockScore.return_value = HealthScore(score=0.85, components={}, notes=["Note 1"])
+        MockGithub.return_value = GitHubInfo(
+            owner="owner",
+            repo="repo",
+            stars=100,
+            forks=20,
+            open_issues=5,
+            last_push="2024-01-01",
+            description="desc",
+            archived=False,
+            raw={},
+        )
+        MockScore.return_value = HealthScore(
+            score=0.85, components={}, notes=["Note 1"]
+        )
 
         exit_code = main(["enrich", "test-pkg"])
 

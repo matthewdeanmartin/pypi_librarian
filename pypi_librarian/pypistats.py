@@ -54,6 +54,7 @@ def fetch_download_stats(
     _own_client = client is None
     if _own_client:
         client = httpx.Client(timeout=30.0)
+    assert client is not None
     try:
         response = client.get(url)
         if response.status_code == 404:

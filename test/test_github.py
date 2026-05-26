@@ -7,8 +7,8 @@ All tests mock HTTP via pytest-httpx — no network access required.
 
 from __future__ import annotations
 
-import pytest
 import httpx
+import pytest
 from pytest_httpx import HTTPXMock
 
 from pypi_librarian.github import (
@@ -17,7 +17,6 @@ from pypi_librarian.github import (
     fetch_github_info,
     fetch_github_info_for_project,
 )
-
 
 _REPO_RESPONSE = {
     "id": 12345,
@@ -98,7 +97,12 @@ def test_fetch_github_info_rate_limited(httpx_mock: HTTPXMock) -> None:
 def test_fetch_github_info_archived(httpx_mock: HTTPXMock) -> None:
     httpx_mock.add_response(
         url="https://api.github.com/repos/owner/old-lib",
-        json={**_REPO_RESPONSE, "archived": True, "name": "old-lib", "full_name": "owner/old-lib"},
+        json={
+            **_REPO_RESPONSE,
+            "archived": True,
+            "name": "old-lib",
+            "full_name": "owner/old-lib",
+        },
     )
     info = fetch_github_info("owner", "old-lib")
     assert info is not None
@@ -135,8 +139,6 @@ def test_fetch_github_info_for_project_success(httpx_mock: HTTPXMock) -> None:
         url="https://api.github.com/repos/psf/requests",
         json=_REPO_RESPONSE,
     )
-    info = fetch_github_info_for_project(
-        "https://github.com/psf/requests", None
-    )
+    info = fetch_github_info_for_project("https://github.com/psf/requests", None)
     assert info is not None
     assert info.stars == 51000

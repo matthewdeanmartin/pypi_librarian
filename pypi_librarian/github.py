@@ -50,7 +50,9 @@ class GitHubInfo:
     raw: dict[str, Any] = field(default_factory=dict)
 
 
-def extract_github_repo(project_url: str | None, home_page: str | None) -> tuple[str, str] | None:
+def extract_github_repo(
+    project_url: str | None, home_page: str | None
+) -> tuple[str, str] | None:
     """
     Extract ``(owner, repo)`` from a package's project or home-page URL.
 
@@ -95,6 +97,7 @@ def fetch_github_info(
     _own_client = client is None
     if _own_client:
         client = httpx.Client(timeout=30.0, headers=headers)
+    assert client is not None
     try:
         response = client.get(url, headers=headers)
         if response.status_code in (403, 404, 429):

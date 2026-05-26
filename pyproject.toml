@@ -45,6 +45,7 @@ dev = [
   "build",
   "detect-secrets",
   "mypy",
+  "pylint>=3.0",
   "pytest",
   "pytest-asyncio",
   "pytest-cov",
