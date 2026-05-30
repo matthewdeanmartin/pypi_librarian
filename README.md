@@ -81,3 +81,9 @@ Common commands:
 - `make lint`
 - `make test`
 - `make build`
+
+## Project Links
+
+- [GitHub](https://github.com/matthewdeanmartin/pypi_librarian)
+- [PyPI](https://pypi.org/project/pypi-librarian/)
+- [Bug Tracker](https://github.com/matthewdeanmartin/pypi_librarian/issues)
