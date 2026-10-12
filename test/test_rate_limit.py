@@ -120,7 +120,9 @@ class TestIsTransient:
             status_code=429,
             request=httpx2.Request("GET", "https://test/"),
         )
-        exc = httpx2.HTTPStatusError("rate limited", request=resp.request, response=resp)
+        exc = httpx2.HTTPStatusError(
+            "rate limited", request=resp.request, response=resp
+        )
         assert _is_transient(exc) is True
 
     def test_500_is_transient(self):
@@ -128,7 +130,9 @@ class TestIsTransient:
             status_code=500,
             request=httpx2.Request("GET", "https://test/"),
         )
-        exc = httpx2.HTTPStatusError("server error", request=resp.request, response=resp)
+        exc = httpx2.HTTPStatusError(
+            "server error", request=resp.request, response=resp
+        )
         assert _is_transient(exc) is True
 
     def test_404_is_not_transient(self):

@@ -114,7 +114,9 @@ def _is_transient(exc: BaseException) -> bool:
     """Return True for HTTP errors worth retrying."""
     if isinstance(exc, httpx2.HTTPStatusError):
         return exc.response.status_code in {429, 500, 502, 503, 504}
-    if isinstance(exc, (httpx2.ConnectTimeout, httpx2.ReadTimeout, httpx2.ConnectError)):
+    if isinstance(
+        exc, (httpx2.ConnectTimeout, httpx2.ReadTimeout, httpx2.ConnectError)
+    ):
         return True
     return False
 
