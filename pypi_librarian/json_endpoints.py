@@ -7,8 +7,8 @@ Release level:   GET /pypi/<project_name>/<version>/json
 Top 100 stats:   GET /stats/
 
 Provides both sync (``JsonEndpoints``) and async (``AsyncJsonEndpoints``)
-classes.  The sync class uses ``httpx.Client``; the async class uses
-``httpx.AsyncClient``.
+classes.  The sync class uses ``httpx2.Client``; the async class uses
+``httpx2.AsyncClient``.
 """
 
 from __future__ import annotations
@@ -16,24 +16,24 @@ from __future__ import annotations
 import json
 from typing import Any
 
-import httpx
+import httpx2
 
 __all__ = ["AsyncJsonEndpoints", "JsonEndpoints"]
 
 
 class JsonEndpoints:
-    """Synchronous PyPI JSON API client backed by ``httpx.Client``."""
+    """Synchronous PyPI JSON API client backed by ``httpx2.Client``."""
 
     def __init__(self, repo_url: str = "https://pypi.org/pypi") -> None:
-        self._client: httpx.Client | None = None
+        self._client: httpx2.Client | None = None
         self.index_url = repo_url.rstrip("/")
 
-    def _get_client(self) -> httpx.Client:
+    def _get_client(self) -> httpx2.Client:
         if self._client is None:
-            self._client = httpx.Client(timeout=30.0)
+            self._client = httpx2.Client(timeout=30.0)
         return self._client
 
-    def _session_get(self, *path: str) -> httpx.Response:
+    def _session_get(self, *path: str) -> httpx2.Response:
         url = self.index_url + "/" + "/".join(path)
         return self._get_client().get(url)
 
@@ -69,18 +69,18 @@ class JsonEndpoints:
 
 
 class AsyncJsonEndpoints:
-    """Async PyPI JSON API client backed by ``httpx.AsyncClient``."""
+    """Async PyPI JSON API client backed by ``httpx2.AsyncClient``."""
 
     def __init__(self, repo_url: str = "https://pypi.org/pypi") -> None:
-        self._client: httpx.AsyncClient | None = None
+        self._client: httpx2.AsyncClient | None = None
         self.index_url = repo_url.rstrip("/")
 
-    def _get_client(self) -> httpx.AsyncClient:
+    def _get_client(self) -> httpx2.AsyncClient:
         if self._client is None:
-            self._client = httpx.AsyncClient(timeout=30.0)
+            self._client = httpx2.AsyncClient(timeout=30.0)
         return self._client
 
-    async def _get(self, *path: str) -> httpx.Response:
+    async def _get(self, *path: str) -> httpx2.Response:
         url = self.index_url + "/" + "/".join(path)
         return await self._get_client().get(url)
 

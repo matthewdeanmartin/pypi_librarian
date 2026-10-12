@@ -23,7 +23,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Any
 
-import httpx
+import httpx2
 
 __all__ = ["GitHubInfo", "fetch_github_info", "extract_github_repo"]
 
@@ -72,7 +72,7 @@ def fetch_github_info(
     repo: str,
     *,
     token: str | None = None,
-    client: httpx.Client | None = None,
+    client: httpx2.Client | None = None,
 ) -> GitHubInfo | None:
     """
     Fetch public repository metadata for *owner*/*repo* from the GitHub API.
@@ -86,7 +86,7 @@ def fetch_github_info(
         token: GitHub personal-access token.  Falls back to the
             ``GITHUB_TOKEN`` environment variable.  Optional — unauthenticated
             requests are allowed but rate-limited to 60/hr.
-        client: Optional ``httpx.Client`` to reuse.
+        client: Optional ``httpx2.Client`` to reuse.
     """
     resolved_token = token or os.environ.get("GITHUB_TOKEN")
     headers: dict[str, str] = {"Accept": "application/vnd.github+json"}
@@ -96,7 +96,7 @@ def fetch_github_info(
     url = f"{_GITHUB_API}/repos/{owner}/{repo}"
     _own_client = client is None
     if _own_client:
-        client = httpx.Client(timeout=30.0, headers=headers)
+        client = httpx2.Client(timeout=30.0, headers=headers)
     assert client is not None
     try:
         response = client.get(url, headers=headers)
@@ -126,7 +126,7 @@ def fetch_github_info_for_project(
     home_page: str | None,
     *,
     token: str | None = None,
-    client: httpx.Client | None = None,
+    client: httpx2.Client | None = None,
 ) -> GitHubInfo | None:
     """
     Convenience wrapper: extract the GitHub repo URL from project metadata

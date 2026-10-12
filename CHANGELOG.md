@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Replace direct HTTPX clients with HTTPX2; HTTPS now uses the operating system trust store.
+
 ### Added
 
 - Async support

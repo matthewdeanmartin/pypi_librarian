@@ -87,3 +87,17 @@ Common commands:
 - [GitHub](https://github.com/matthewdeanmartin/pypi_librarian)
 - [PyPI](https://pypi.org/project/pypi-librarian/)
 - [Bug Tracker](https://github.com/matthewdeanmartin/pypi_librarian/issues)
+
+
+## Python 3.15 verification (2026-10-04)
+
+The earlier HTTPX bound is superseded by the HTTPX2 verification below.
+
+Stable locks were refreshed with `uv lock --upgrade`. Dependency verification uses fresh environments and published wheels only; no source builds. Full developer tools still have wheel blockers (linkcheckmd or PyYAML); passing unit tests do not certify the full developer group. Evidence and details: `C:/github/python315_batch5_2026-10-04.md`. Human operators review and file any upstream bugs.
+
+
+## HTTPX2 verification (2026-10-04)
+
+Sync/async clients use HTTPX2; tests use httpx2-pytest and httpx2_mock. All 179 unit tests pass / 18 integration deselected in RC3 stable/pre and 3.14.7, plus installed-wheel startup. Public client/response/exception types are now HTTPX2 types. Reconcile local 0.1.6 with PyPI 0.1.9 before publishing.
+
+Dependency installs require published wheels; no native builds or GitHub jobs. Experimental mode allows prereleases but the successful HTTPX2 test environments selected stable packages. Locks were upgraded with `uv lock --upgrade`. Changes are local; human operators decide publishing and upstream reports.

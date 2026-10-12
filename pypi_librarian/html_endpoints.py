@@ -16,21 +16,21 @@ from __future__ import annotations
 
 from typing import AsyncIterator, Iterator, cast
 
-import httpx
+import httpx2
 from lxml import html
 
 __all__ = ["AsyncHtmlEndpoints", "HtmlEndpoints"]
 
 
 class HtmlEndpoints:
-    """HTML scraping of pypi.org pages (sync, backed by ``httpx.Client``)."""
+    """HTML scraping of pypi.org pages (sync, backed by ``httpx2.Client``)."""
 
     def __init__(self) -> None:
-        self._client: httpx.Client | None = None
+        self._client: httpx2.Client | None = None
 
-    def _get_client(self) -> httpx.Client:
+    def _get_client(self) -> httpx2.Client:
         if self._client is None:
-            self._client = httpx.Client(timeout=60.0)
+            self._client = httpx2.Client(timeout=60.0)
         return self._client
 
     def project_page(self, name: str) -> str:
@@ -90,14 +90,14 @@ class HtmlEndpoints:
 
 
 class AsyncHtmlEndpoints:
-    """Async HTML scraping of pypi.org pages (backed by ``httpx.AsyncClient``)."""
+    """Async HTML scraping of pypi.org pages (backed by ``httpx2.AsyncClient``)."""
 
     def __init__(self) -> None:
-        self._client: httpx.AsyncClient | None = None
+        self._client: httpx2.AsyncClient | None = None
 
-    def _get_client(self) -> httpx.AsyncClient:
+    def _get_client(self) -> httpx2.AsyncClient:
         if self._client is None:
-            self._client = httpx.AsyncClient(timeout=60.0)
+            self._client = httpx2.AsyncClient(timeout=60.0)
         return self._client
 
     async def all_async(self) -> AsyncIterator[str]:

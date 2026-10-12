@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 from unittest.mock import MagicMock, patch
 
-import httpx
+import httpx2
 import pytest
 
 from pypi_librarian.html_endpoints import HtmlEndpoints
@@ -24,12 +24,12 @@ from pypi_librarian.rss_endpoints import RssEndpoints
 # ---------------------------------------------------------------------------
 
 
-def _mock_response(body: str, status: int = 200) -> httpx.Response:
-    """Build a minimal httpx.Response for unit-test mocking."""
-    return httpx.Response(
+def _mock_response(body: str, status: int = 200) -> httpx2.Response:
+    """Build a minimal httpx2.Response for unit-test mocking."""
+    return httpx2.Response(
         status_code=status,
         text=body,
-        request=httpx.Request("GET", "https://test/"),
+        request=httpx2.Request("GET", "https://test/"),
     )
 
 
@@ -101,10 +101,10 @@ class TestHtmlEndpoints:
         minimal_simple_html = (
             b"<html><body><a href='/simple/requests/'>requests</a></body></html>"
         )
-        resp = httpx.Response(
+        resp = httpx2.Response(
             status_code=200,
             content=minimal_simple_html,
-            request=httpx.Request("GET", "https://pypi.org/simple/"),
+            request=httpx2.Request("GET", "https://pypi.org/simple/"),
         )
         hep = HtmlEndpoints()
         mock_client = MagicMock()

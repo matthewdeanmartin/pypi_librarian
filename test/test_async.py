@@ -10,7 +10,7 @@ import asyncio
 import json
 from unittest.mock import AsyncMock, patch
 
-import httpx
+import httpx2
 import pytest
 
 from pypi_librarian.json_endpoints import AsyncJsonEndpoints
@@ -22,11 +22,11 @@ from pypi_librarian.utils import run_async
 # ---------------------------------------------------------------------------
 
 
-def _async_response(body: str, status: int = 200) -> httpx.Response:
-    return httpx.Response(
+def _async_response(body: str, status: int = 200) -> httpx2.Response:
+    return httpx2.Response(
         status_code=status,
         text=body,
-        request=httpx.Request("GET", "https://test/"),
+        request=httpx2.Request("GET", "https://test/"),
     )
 
 
@@ -102,7 +102,7 @@ class TestRepositoryBulkAsync:
         repo = Repository()
         resp = _async_response(json.dumps(sample_project_json))
 
-        async def fake_get(*path: str) -> httpx.Response:
+        async def fake_get(*path: str) -> httpx2.Response:
             return resp
 
         with patch("pypi_librarian.class_repo.AsyncJsonEndpoints") as MockAJE:

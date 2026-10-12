@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import xml.etree.ElementTree as ET
 
-import httpx
+import httpx2
 
 from pypi_librarian.models import (
     NewPackage,
@@ -32,11 +32,11 @@ class RssEndpoints:
     """Typed wrappers around the PyPI RSS feeds."""
 
     def __init__(self) -> None:
-        self._client: httpx.Client | None = None
+        self._client: httpx2.Client | None = None
 
-    def _get_client(self) -> httpx.Client:
+    def _get_client(self) -> httpx2.Client:
         if self._client is None:
-            self._client = httpx.Client(timeout=30.0)
+            self._client = httpx2.Client(timeout=30.0)
         return self._client
 
     def newest_packages(self) -> list[NewPackage]:

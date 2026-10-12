@@ -16,7 +16,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Any
 
-import httpx
+import httpx2
 
 __all__ = ["DownloadStats", "fetch_download_stats"]
 
@@ -37,23 +37,23 @@ class DownloadStats:
 def fetch_download_stats(
     name: str,
     *,
-    client: httpx.Client | None = None,
+    client: httpx2.Client | None = None,
 ) -> DownloadStats | None:
     """
     Fetch download stats for *name* from pypistats.org.
 
     Returns ``None`` if the package is unknown to pypistats (404).
-    Raises ``httpx.HTTPStatusError`` on other HTTP errors.
+    Raises ``httpx2.HTTPStatusError`` on other HTTP errors.
 
     Args:
         name: PyPI package name.
-        client: Optional ``httpx.Client`` to reuse.  A temporary client is
+        client: Optional ``httpx2.Client`` to reuse.  A temporary client is
             created and closed if not provided.
     """
     url = f"{_BASE}/packages/{name}/recent"
     _own_client = client is None
     if _own_client:
-        client = httpx.Client(timeout=30.0)
+        client = httpx2.Client(timeout=30.0)
     assert client is not None
     try:
         response = client.get(url)

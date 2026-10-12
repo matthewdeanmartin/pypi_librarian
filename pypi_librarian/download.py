@@ -33,7 +33,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-import httpx
+import httpx2
 
 from pypi_librarian.json_endpoints import AsyncJsonEndpoints
 from pypi_librarian.rate_limit import RateLimiter
@@ -384,7 +384,7 @@ class Downloader:
 
     async def _download_file(self, url: str, dest: Path, expected_sha256: str) -> None:
         """Download a single file and verify its SHA256 checksum."""
-        async with httpx.AsyncClient(timeout=120.0) as client:
+        async with httpx2.AsyncClient(timeout=120.0) as client:
             async with client.stream("GET", url) as response:
                 response.raise_for_status()
                 sha256 = hashlib.sha256()

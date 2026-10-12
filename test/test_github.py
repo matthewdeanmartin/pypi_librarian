@@ -2,14 +2,14 @@
 """
 Unit tests for pypi_librarian.github.
 
-All tests mock HTTP via pytest-httpx — no network access required.
+All tests mock HTTP via pytest-httpx2 — no network access required.
 """
 
 from __future__ import annotations
 
-import httpx
+import httpx2
 import pytest
-from pytest_httpx import HTTPXMock
+from pytest_httpx2 import HTTPXMock
 
 from pypi_librarian.github import (
     GitHubInfo,
@@ -59,8 +59,8 @@ def test_extract_github_repo(project_url, home_page, expected) -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_fetch_github_info_success(httpx_mock: HTTPXMock) -> None:
-    httpx_mock.add_response(
+def test_fetch_github_info_success(httpx2_mock: HTTPXMock) -> None:
+    httpx2_mock.add_response(
         url="https://api.github.com/repos/psf/requests",
         json=_REPO_RESPONSE,
     )
@@ -76,8 +76,8 @@ def test_fetch_github_info_success(httpx_mock: HTTPXMock) -> None:
     assert info.archived is False
 
 
-def test_fetch_github_info_not_found(httpx_mock: HTTPXMock) -> None:
-    httpx_mock.add_response(
+def test_fetch_github_info_not_found(httpx2_mock: HTTPXMock) -> None:
+    httpx2_mock.add_response(
         url="https://api.github.com/repos/nobody/no-such-repo",
         status_code=404,
     )
@@ -85,8 +85,8 @@ def test_fetch_github_info_not_found(httpx_mock: HTTPXMock) -> None:
     assert result is None
 
 
-def test_fetch_github_info_rate_limited(httpx_mock: HTTPXMock) -> None:
-    httpx_mock.add_response(
+def test_fetch_github_info_rate_limited(httpx2_mock: HTTPXMock) -> None:
+    httpx2_mock.add_response(
         url="https://api.github.com/repos/psf/requests",
         status_code=403,
     )
@@ -94,8 +94,8 @@ def test_fetch_github_info_rate_limited(httpx_mock: HTTPXMock) -> None:
     assert result is None
 
 
-def test_fetch_github_info_archived(httpx_mock: HTTPXMock) -> None:
-    httpx_mock.add_response(
+def test_fetch_github_info_archived(httpx2_mock: HTTPXMock) -> None:
+    httpx2_mock.add_response(
         url="https://api.github.com/repos/owner/old-lib",
         json={
             **_REPO_RESPONSE,
@@ -109,8 +109,8 @@ def test_fetch_github_info_archived(httpx_mock: HTTPXMock) -> None:
     assert info.archived is True
 
 
-def test_fetch_github_info_raw_preserved(httpx_mock: HTTPXMock) -> None:
-    httpx_mock.add_response(
+def test_fetch_github_info_raw_preserved(httpx2_mock: HTTPXMock) -> None:
+    httpx2_mock.add_response(
         url="https://api.github.com/repos/psf/requests",
         json=_REPO_RESPONSE,
     )
@@ -134,8 +134,8 @@ def test_fetch_github_info_for_project_non_github_url() -> None:
     assert result is None
 
 
-def test_fetch_github_info_for_project_success(httpx_mock: HTTPXMock) -> None:
-    httpx_mock.add_response(
+def test_fetch_github_info_for_project_success(httpx2_mock: HTTPXMock) -> None:
+    httpx2_mock.add_response(
         url="https://api.github.com/repos/psf/requests",
         json=_REPO_RESPONSE,
     )

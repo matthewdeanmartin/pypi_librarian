@@ -15,7 +15,7 @@ import logging
 import time
 from typing import Any
 
-import httpx
+import httpx2
 from tenacity import (
     RetryCallState,
     retry,
@@ -112,9 +112,9 @@ class SyncTokenBucket:
 
 def _is_transient(exc: BaseException) -> bool:
     """Return True for HTTP errors worth retrying."""
-    if isinstance(exc, httpx.HTTPStatusError):
+    if isinstance(exc, httpx2.HTTPStatusError):
         return exc.response.status_code in {429, 500, 502, 503, 504}
-    if isinstance(exc, (httpx.ConnectTimeout, httpx.ReadTimeout, httpx.ConnectError)):
+    if isinstance(exc, (httpx2.ConnectTimeout, httpx2.ReadTimeout, httpx2.ConnectError)):
         return True
     return False
 
@@ -163,7 +163,7 @@ class RateLimiter:
         """Wait for a token from the bucket."""
         await self.bucket.acquire()
 
-    async def on_response(self, response: httpx.Response) -> None:
+    async def on_response(self, response: httpx2.Response) -> None:
         """
         Handle rate-limit responses.
 

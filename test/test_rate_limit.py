@@ -8,7 +8,7 @@ from __future__ import annotations
 import time
 from unittest.mock import patch
 
-import httpx
+import httpx2
 import pytest
 
 from pypi_librarian.rate_limit import (
@@ -87,10 +87,10 @@ class TestRateLimiter:
     @pytest.mark.asyncio
     async def test_on_response_429_sleeps(self):
         limiter = RateLimiter(rate=100.0)
-        resp = httpx.Response(
+        resp = httpx2.Response(
             status_code=429,
             headers={"Retry-After": "0.1"},
-            request=httpx.Request("GET", "https://test/"),
+            request=httpx2.Request("GET", "https://test/"),
         )
         with patch("pypi_librarian.rate_limit.asyncio.sleep") as mock_sleep:
             mock_sleep.return_value = None
@@ -100,9 +100,9 @@ class TestRateLimiter:
     @pytest.mark.asyncio
     async def test_on_response_200_does_not_sleep(self):
         limiter = RateLimiter(rate=100.0)
-        resp = httpx.Response(
+        resp = httpx2.Response(
             status_code=200,
-            request=httpx.Request("GET", "https://test/"),
+            request=httpx2.Request("GET", "https://test/"),
         )
         with patch("pypi_librarian.rate_limit.asyncio.sleep") as mock_sleep:
             await limiter.on_response(resp)
@@ -116,32 +116,32 @@ class TestRateLimiter:
 
 class TestIsTransient:
     def test_429_is_transient(self):
-        resp = httpx.Response(
+        resp = httpx2.Response(
             status_code=429,
-            request=httpx.Request("GET", "https://test/"),
+            request=httpx2.Request("GET", "https://test/"),
         )
-        exc = httpx.HTTPStatusError("rate limited", request=resp.request, response=resp)
+        exc = httpx2.HTTPStatusError("rate limited", request=resp.request, response=resp)
         assert _is_transient(exc) is True
 
     def test_500_is_transient(self):
-        resp = httpx.Response(
+        resp = httpx2.Response(
             status_code=500,
-            request=httpx.Request("GET", "https://test/"),
+            request=httpx2.Request("GET", "https://test/"),
         )
-        exc = httpx.HTTPStatusError("server error", request=resp.request, response=resp)
+        exc = httpx2.HTTPStatusError("server error", request=resp.request, response=resp)
         assert _is_transient(exc) is True
 
     def test_404_is_not_transient(self):
-        resp = httpx.Response(
+        resp = httpx2.Response(
             status_code=404,
-            request=httpx.Request("GET", "https://test/"),
+            request=httpx2.Request("GET", "https://test/"),
         )
-        exc = httpx.HTTPStatusError("not found", request=resp.request, response=resp)
+        exc = httpx2.HTTPStatusError("not found", request=resp.request, response=resp)
         assert _is_transient(exc) is False
 
     def test_timeout_is_transient(self):
-        assert _is_transient(httpx.ReadTimeout("timeout")) is True
-        assert _is_transient(httpx.ConnectTimeout("timeout")) is True
+        assert _is_transient(httpx2.ReadTimeout("timeout")) is True
+        assert _is_transient(httpx2.ConnectTimeout("timeout")) is True
 
     def test_value_error_is_not_transient(self):
         assert _is_transient(ValueError("nope")) is False

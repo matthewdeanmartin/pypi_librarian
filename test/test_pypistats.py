@@ -2,16 +2,16 @@
 """
 Unit tests for pypi_librarian.pypistats.
 
-All tests mock HTTP via pytest-httpx — no network access required.
+All tests mock HTTP via pytest-httpx2 — no network access required.
 """
 
 from __future__ import annotations
 
 import json
 
-import httpx
+import httpx2
 import pytest
-from pytest_httpx import HTTPXMock
+from pytest_httpx2 import HTTPXMock
 
 from pypi_librarian.pypistats import DownloadStats, fetch_download_stats
 
@@ -26,8 +26,8 @@ _RECENT_RESPONSE = {
 }
 
 
-def test_fetch_download_stats_success(httpx_mock: HTTPXMock) -> None:
-    httpx_mock.add_response(
+def test_fetch_download_stats_success(httpx2_mock: HTTPXMock) -> None:
+    httpx2_mock.add_response(
         url="https://pypistats.org/api/packages/requests/recent",
         json=_RECENT_RESPONSE,
     )
@@ -39,8 +39,8 @@ def test_fetch_download_stats_success(httpx_mock: HTTPXMock) -> None:
     assert stats.last_month == 345678
 
 
-def test_fetch_download_stats_not_found(httpx_mock: HTTPXMock) -> None:
-    httpx_mock.add_response(
+def test_fetch_download_stats_not_found(httpx2_mock: HTTPXMock) -> None:
+    httpx2_mock.add_response(
         url="https://pypistats.org/api/packages/no-such-package-xyz/recent",
         status_code=404,
     )
@@ -48,8 +48,8 @@ def test_fetch_download_stats_not_found(httpx_mock: HTTPXMock) -> None:
     assert result is None
 
 
-def test_fetch_download_stats_reuses_client(httpx_mock: HTTPXMock) -> None:
-    httpx_mock.add_response(
+def test_fetch_download_stats_reuses_client(httpx2_mock: HTTPXMock) -> None:
+    httpx2_mock.add_response(
         url="https://pypistats.org/api/packages/flask/recent",
         json={
             "data": [
@@ -60,14 +60,14 @@ def test_fetch_download_stats_reuses_client(httpx_mock: HTTPXMock) -> None:
             "package": "flask",
         },
     )
-    with httpx.Client() as client:
+    with httpx2.Client() as client:
         stats = fetch_download_stats("flask", client=client)
     assert stats is not None
     assert stats.last_month == 30
 
 
-def test_fetch_download_stats_raw_preserved(httpx_mock: HTTPXMock) -> None:
-    httpx_mock.add_response(
+def test_fetch_download_stats_raw_preserved(httpx2_mock: HTTPXMock) -> None:
+    httpx2_mock.add_response(
         url="https://pypistats.org/api/packages/requests/recent",
         json=_RECENT_RESPONSE,
     )
@@ -76,9 +76,9 @@ def test_fetch_download_stats_raw_preserved(httpx_mock: HTTPXMock) -> None:
     assert stats.raw == _RECENT_RESPONSE
 
 
-def test_fetch_download_stats_missing_categories(httpx_mock: HTTPXMock) -> None:
+def test_fetch_download_stats_missing_categories(httpx2_mock: HTTPXMock) -> None:
     """Partial response — missing categories should default to 0."""
-    httpx_mock.add_response(
+    httpx2_mock.add_response(
         url="https://pypistats.org/api/packages/tiny/recent",
         json={"data": [{"category": "last_month", "downloads": 5}], "package": "tiny"},
     )
